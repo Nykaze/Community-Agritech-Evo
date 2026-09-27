@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:horn_coral",
+      "max": 2,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:horn_coral",
+  "soils": [
+    "#community_agritechevolved:water_soils"
+  ]
+}

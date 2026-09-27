@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "P": {
+      "item": "minecraft:dark_oak_planks"
+    }
+  },
+  "pattern": [
+    "PHP",
+    "PPP"
+  ],
+  "result": {
+    "item": "community_agritechevolved:basic_dark_oak_planter"
+  },
+  "show_notification": true
+}

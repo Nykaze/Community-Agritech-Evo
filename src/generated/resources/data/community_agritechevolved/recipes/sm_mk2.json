@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "G": {
+      "item": "minecraft:gold_block"
+    },
+    "S": {
+      "item": "community_agritechevolved:sm_mk1"
+    }
+  },
+  "pattern": [
+    " D ",
+    "GSG",
+    " D "
+  ],
+  "result": {
+    "item": "community_agritechevolved:sm_mk2"
+  },
+  "show_notification": true
+}

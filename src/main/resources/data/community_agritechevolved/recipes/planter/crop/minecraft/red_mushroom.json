@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:red_mushroom",
+      "max": 1,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:red_mushroom",
+  "soils": [
+    "#community_agritechevolved:mushroom_soils"
+  ]
+}

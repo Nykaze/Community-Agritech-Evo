@@ -1,240 +1,205 @@
 package com.misterd.agritechevolved.item;
 
+import com.misterd.agritechevolved.AgritechEvolved;
 import com.misterd.agritechevolved.Config;
 import com.misterd.agritechevolved.item.custom.ClocheItem;
-import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.platform.Window;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.world.level.Level;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 public class ATEItems {
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems("agritechevolved");
+    public static final DeferredRegister<Item> ITEMS =
+            DeferredRegister.create(Registries.ITEM, AgritechEvolved.MODID);
 
-    public static final DeferredItem<Item> SM_MK1 = ITEMS.registerItem("sm_mk1",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> SM_MK1 = ITEMS.register("sm_mk1",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        int speedBoost = (int) Math.round((Config.getSpeedModuleMk1Multiplier() - 1.0D) * 100.0D);
-                        int powerIncrease = (int) Math.round((Config.getSpeedModuleMk1PowerMultiplier() - 1.0D) * 100.0D);
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.speed_boost", speedBoost));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.power_increase", powerIncrease));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addSpeedModuleTooltip(tooltip,
+                            Config.getSpeedModuleMk1Multiplier(),
+                            Config.getSpeedModuleMk1PowerMultiplier());
                 }
             });
 
-    public static final DeferredItem<Item> SM_MK2 = ITEMS.registerItem("sm_mk2",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> SM_MK2 = ITEMS.register("sm_mk2",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        int speedBoost = (int) Math.round((Config.getSpeedModuleMk2Multiplier() - 1.0D) * 100.0D);
-                        int powerIncrease = (int) Math.round((Config.getSpeedModuleMk2PowerMultiplier() - 1.0D) * 100.0D);
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.speed_boost", speedBoost));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.power_increase", powerIncrease));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addSpeedModuleTooltip(tooltip,
+                            Config.getSpeedModuleMk2Multiplier(),
+                            Config.getSpeedModuleMk2PowerMultiplier());
                 }
             });
 
-    public static final DeferredItem<Item> SM_MK3 = ITEMS.registerItem("sm_mk3",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> SM_MK3 = ITEMS.register("sm_mk3",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        int speedBoost = (int) Math.round((Config.getSpeedModuleMk3Multiplier() - 1.0D) * 100.0D);
-                        int powerIncrease = (int) Math.round((Config.getSpeedModuleMk3PowerMultiplier() - 1.0D) * 100.0D);
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.speed_boost", speedBoost));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.power_increase", powerIncrease));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addSpeedModuleTooltip(tooltip,
+                            Config.getSpeedModuleMk3Multiplier(),
+                            Config.getSpeedModuleMk3PowerMultiplier());
                 }
             });
 
-    public static final DeferredItem<Item> YM_MK1 = ITEMS.registerItem("ym_mk1",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> YM_MK1 = ITEMS.register("ym_mk1",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        int yieldBoost = (int) Math.round((Config.getYieldModuleMk1Multiplier() - 1.0D) * 100.0D);
-                        int speedReduction = (int) Math.round((1.0D - Config.getYieldModuleMk1SpeedPenalty()) * 100.0D);
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.yield_boost", yieldBoost));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.speed_reduction", speedReduction));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addYieldModuleTooltip(tooltip,
+                            Config.getYieldModuleMk1Multiplier(),
+                            Config.getYieldModuleMk1SpeedPenalty());
                 }
             });
 
-    public static final DeferredItem<Item> YM_MK2 = ITEMS.registerItem("ym_mk2",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> YM_MK2 = ITEMS.register("ym_mk2",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        int yieldBoost = (int) Math.round((Config.getYieldModuleMk2Multiplier() - 1.0D) * 100.0D);
-                        int speedReduction = (int) Math.round((1.0D - Config.getYieldModuleMk2SpeedPenalty()) * 100.0D);
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.yield_boost", yieldBoost));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.speed_reduction", speedReduction));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addYieldModuleTooltip(tooltip,
+                            Config.getYieldModuleMk2Multiplier(),
+                            Config.getYieldModuleMk2SpeedPenalty());
                 }
             });
 
-    public static final DeferredItem<Item> YM_MK3 = ITEMS.registerItem("ym_mk3",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> YM_MK3 = ITEMS.register("ym_mk3",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        int yieldBoost = (int) Math.round((Config.getYieldModuleMk3Multiplier() - 1.0D) * 100.0D);
-                        int speedReduction = (int) Math.round((1.0D - Config.getYieldModuleMk3SpeedPenalty()) * 100.0D);
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.yield_boost", yieldBoost));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.speed_reduction", speedReduction));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addYieldModuleTooltip(tooltip,
+                            Config.getYieldModuleMk3Multiplier(),
+                            Config.getYieldModuleMk3SpeedPenalty());
                 }
             });
 
-    public static final DeferredItem<Item> RM_MK1 = ITEMS.registerItem("rm_mk1",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> RM_MK1 = ITEMS.register("rm_mk1",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.rm_mk1"));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addShiftTooltip(tooltip, "tooltip.community_agritechevolved.module.rm_mk1");
                 }
             });
 
-    public static final DeferredItem<Item> RM_MK2 = ITEMS.registerItem("rm_mk2",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> RM_MK2 = ITEMS.register("rm_mk2",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.rm_mk2"));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addShiftTooltip(tooltip, "tooltip.community_agritechevolved.module.rm_mk2");
                 }
             });
 
-    public static final DeferredItem<Item> RM_MK3 = ITEMS.registerItem("rm_mk3",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> RM_MK3 = ITEMS.register("rm_mk3",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    if (isShiftDown()) {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.rm_mk3"));
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.module.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    addShiftTooltip(tooltip, "tooltip.community_agritechevolved.module.rm_mk3");
                 }
             });
 
-    public static final DeferredItem<Item> CRUDE_BIOMASS = ITEMS.registerItem("crude_biomass",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> CRUDE_BIOMASS = ITEMS.register("crude_biomass",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    adder.accept(Component.translatable("tooltip.agritechevolved.crude_biomass"));
-                    NumberFormat fmt = NumberFormat.getNumberInstance(Locale.US);
-                    int baseRF = Config.getBurnerCrudeBiomassRfValue();
-                    int burnDuration = Config.getBurnerCrudeBiomassBurnDuration();
-                    int baseDuration = 50;
-                    int actualRF = (int) ((float) baseRF * ((float) burnDuration / baseDuration));
-                    adder.accept(Component.translatable("tooltip.agritechevolved.crude_biomass.rf_generation", fmt.format(actualRF)).withStyle(ChatFormatting.GREEN));
-                    if (isShiftDown()) {
-                        double burnSeconds = burnDuration / 20.0D;
-                        adder.accept(Component.translatable("tooltip.agritechevolved.fuel.burn_duration", String.format("%.1f", burnSeconds)).withStyle(ChatFormatting.AQUA));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.fuel.rf_per_second", fmt.format((int) Math.round(actualRF / burnSeconds))).withStyle(ChatFormatting.YELLOW));
-                        if (burnDuration != baseDuration) {
-                            int pct = (int) Math.round(((double) burnDuration / baseDuration - 1.0D) * 100.0D);
-                            if (pct > 0) adder.accept(Component.translatable("tooltip.agritechevolved.fuel.duration_bonus", pct).withStyle(ChatFormatting.GREEN));
-                            else if (pct < 0) adder.accept(Component.translatable("tooltip.agritechevolved.fuel.duration_penalty", Math.abs(pct)).withStyle(ChatFormatting.RED));
-                        }
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.crude_fuel.shift_info"));
-                    }
-                    adder.accept(Component.translatable("tooltip.agritechevolved.crude_biomass.inefficient").withStyle(ChatFormatting.RED));
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    tooltip.add(Component.translatable("tooltip.community_agritechevolved.crude_biomass"));
+                    addFuelTooltip(tooltip,
+                            Config.getBurnerCrudeBiomassRfValue(),
+                            Config.getBurnerCrudeBiomassBurnDuration(),
+                            50,
+                            "tooltip.community_agritechevolved.crude_biomass.rf_generation",
+                            "tooltip.community_agritechevolved.crude_fuel.shift_info");
+                    tooltip.add(Component.translatable("tooltip.community_agritechevolved.crude_biomass.inefficient").withStyle(ChatFormatting.RED));
                 }
             });
 
-    public static final DeferredItem<Item> BIOMASS = ITEMS.registerItem("biomass",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> BIOMASS = ITEMS.register("biomass",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    adder.accept(Component.translatable("tooltip.agritechevolved.biomass"));
-                    NumberFormat fmt = NumberFormat.getNumberInstance(Locale.US);
-                    int baseRF = Config.getBurnerBiomassRfValue();
-                    int burnDuration = Config.getBurnerBiomassBurnDuration();
-                    int baseDuration = 100;
-                    int actualRF = (int) ((float) baseRF * ((float) burnDuration / baseDuration));
-                    if (isShiftDown()) {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.biomass.rf_generation", fmt.format(actualRF)).withStyle(ChatFormatting.GREEN));
-                        double burnSeconds = burnDuration / 20.0D;
-                        adder.accept(Component.translatable("tooltip.agritechevolved.fuel.burn_duration", String.format("%.1f", burnSeconds)).withStyle(ChatFormatting.AQUA));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.fuel.rf_per_second", fmt.format((int) Math.round(actualRF / burnSeconds))).withStyle(ChatFormatting.YELLOW));
-                        if (burnDuration != baseDuration) {
-                            int pct = (int) Math.round(((double) burnDuration / baseDuration - 1.0D) * 100.0D);
-                            if (pct > 0) adder.accept(Component.translatable("tooltip.agritechevolved.fuel.duration_bonus", pct).withStyle(ChatFormatting.GREEN));
-                            else if (pct < 0) adder.accept(Component.translatable("tooltip.agritechevolved.fuel.duration_penalty", Math.abs(pct)).withStyle(ChatFormatting.RED));
-                        }
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.fuel.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    tooltip.add(Component.translatable("tooltip.community_agritechevolved.biomass"));
+                    addFuelTooltip(tooltip,
+                            Config.getBurnerBiomassRfValue(),
+                            Config.getBurnerBiomassBurnDuration(),
+                            100,
+                            "tooltip.community_agritechevolved.biomass.rf_generation",
+                            "tooltip.community_agritechevolved.fuel.shift_info");
                 }
             });
 
-    public static final DeferredItem<Item> COMPACTED_BIOMASS = ITEMS.registerItem("compacted_biomass",
-            props -> new Item(props) {
+    public static final RegistryObject<Item> COMPACTED_BIOMASS = ITEMS.register("compacted_biomass",
+            () -> new Item(new Item.Properties()) {
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-                    adder.accept(Component.translatable("tooltip.agritechevolved.compacted"));
-                    NumberFormat fmt = NumberFormat.getNumberInstance(Locale.US);
-                    int baseRF = Config.getBurnerCompactedBiomassRfValue();
-                    int burnDuration = Config.getBurnerCompactedBiomassBurnDuration();
-                    int baseDuration = 180;
-                    int actualRF = (int) ((float) baseRF * ((float) burnDuration / baseDuration));
-                    if (isShiftDown()) {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.compacted_biomass.rf_generation", fmt.format(actualRF)).withStyle(ChatFormatting.GREEN));
-                        double burnSeconds = burnDuration / 20.0D;
-                        adder.accept(Component.translatable("tooltip.agritechevolved.fuel.burn_duration", String.format("%.1f", burnSeconds)).withStyle(ChatFormatting.AQUA));
-                        adder.accept(Component.translatable("tooltip.agritechevolved.fuel.rf_per_second", fmt.format((int) Math.round(actualRF / burnSeconds))).withStyle(ChatFormatting.YELLOW));
-                        if (burnDuration != baseDuration) {
-                            int pct = (int) Math.round(((double) burnDuration / baseDuration - 1.0D) * 100.0D);
-                            if (pct > 0) adder.accept(Component.translatable("tooltip.agritechevolved.fuel.duration_bonus", pct).withStyle(ChatFormatting.GREEN));
-                            else if (pct < 0) adder.accept(Component.translatable("tooltip.agritechevolved.fuel.duration_penalty", Math.abs(pct)).withStyle(ChatFormatting.RED));
-                        }
-                    } else {
-                        adder.accept(Component.translatable("tooltip.agritechevolved.fuel.shift_info"));
-                    }
+                public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
+                    tooltip.add(Component.translatable("tooltip.community_agritechevolved.compacted"));
+                    addFuelTooltip(tooltip,
+                            Config.getBurnerCompactedBiomassRfValue(),
+                            Config.getBurnerCompactedBiomassBurnDuration(),
+                            180,
+                            "tooltip.community_agritechevolved.compacted_biomass.rf_generation",
+                            "tooltip.community_agritechevolved.fuel.shift_info");
                 }
             });
 
-    public static final DeferredHolder<Item, ClocheItem> CLOCHE = ITEMS.registerItem("cloche_dome",
-            props -> new ClocheItem(props));
+    public static final RegistryObject<Item> CLOCHE = ITEMS.register("cloche_dome",
+            () -> new ClocheItem(new Item.Properties()));
 
-    private static boolean isShiftDown() {
-        Window window = Minecraft.getInstance().getWindow();
-        return InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_SHIFT) || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_SHIFT);
+    private static void addShiftTooltip(List<Component> tooltip, String shiftKey) {
+        if (Screen.hasShiftDown()) {
+            tooltip.add(Component.translatable(shiftKey));
+        } else {
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.module.shift_info"));
+        }
+    }
+
+    private static void addSpeedModuleTooltip(List<Component> tooltip, double speedMultiplier, double powerMultiplier) {
+        if (Screen.hasShiftDown()) {
+            int speedBoost = (int) Math.round((speedMultiplier - 1.0D) * 100.0D);
+            int powerIncrease = (int) Math.round((powerMultiplier - 1.0D) * 100.0D);
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.module.speed_boost", speedBoost));
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.module.power_increase", powerIncrease));
+        } else {
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.module.shift_info"));
+        }
+    }
+
+    private static void addYieldModuleTooltip(List<Component> tooltip, double yieldMultiplier, double speedPenalty) {
+        if (Screen.hasShiftDown()) {
+            int yieldBoost = (int) Math.round((yieldMultiplier - 1.0D) * 100.0D);
+            int speedReduction = (int) Math.round((1.0D - speedPenalty) * 100.0D);
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.module.yield_boost", yieldBoost));
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.module.speed_reduction", speedReduction));
+        } else {
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.module.shift_info"));
+        }
+    }
+
+    private static void addFuelTooltip(List<Component> tooltip, int baseRF, int burnDuration, int baseDuration,
+                                       String rfKey, String shiftInfoKey) {
+        NumberFormat fmt = NumberFormat.getNumberInstance(Locale.US);
+        int actualRF = (int) ((float) baseRF * ((float) burnDuration / baseDuration));
+        if (Screen.hasShiftDown()) {
+            tooltip.add(Component.translatable(rfKey, fmt.format(actualRF)).withStyle(ChatFormatting.GREEN));
+            double burnSeconds = burnDuration / 20.0D;
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.burn_duration", String.format("%.1f", burnSeconds)).withStyle(ChatFormatting.AQUA));
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.rf_per_second", fmt.format((int) Math.round(actualRF / burnSeconds))).withStyle(ChatFormatting.YELLOW));
+            if (burnDuration != baseDuration) {
+                int pct = (int) Math.round(((double) burnDuration / baseDuration - 1.0D) * 100.0D);
+                if (pct > 0) tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.duration_bonus", pct).withStyle(ChatFormatting.GREEN));
+                else if (pct < 0) tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.duration_penalty", Math.abs(pct)).withStyle(ChatFormatting.RED));
+            }
+        } else {
+            tooltip.add(Component.translatable(shiftInfoKey));
+        }
     }
 
     public static void register(IEventBus eventBus) {

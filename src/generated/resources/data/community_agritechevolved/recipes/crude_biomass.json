@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "tag": "community_agritechevolved:dirt_like_block_items"
+    },
+    "L": {
+      "tag": "minecraft:leaves"
+    }
+  },
+  "pattern": [
+    "LLL",
+    "DDD",
+    "LLL"
+  ],
+  "result": {
+    "item": "community_agritechevolved:crude_biomass"
+  },
+  "show_notification": true
+}

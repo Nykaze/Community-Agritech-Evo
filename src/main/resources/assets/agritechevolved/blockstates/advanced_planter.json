@@ -1,8 +1,0 @@
-{
-	"variants": {
-		"cloched=false,powered=false": { "model": "agritechevolved:block/advanced_planter" },
-		"cloched=false,powered=true":  { "model": "agritechevolved:block/advanced_planter_powered" },
-		"cloched=true,powered=false":  { "model": "agritechevolved:block/advanced_planter" },
-		"cloched=true,powered=true":   { "model": "agritechevolved:block/advanced_planter_powered" }
-	}
-}

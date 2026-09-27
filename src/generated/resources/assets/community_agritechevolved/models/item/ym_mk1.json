@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "community_agritechevolved:item/ym_mk1"
+  }
+}

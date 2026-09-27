@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:firefly_bush",
+      "max": 2,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:firefly_bush",
+  "soils": [
+    "#community_agritechevolved:dirt_soils"
+  ]
+}

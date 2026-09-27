@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "cloched=false": { "model": "agritechevolved:block/green_terracotta_planter" },
-    "cloched=true":  { "model": "agritechevolved:block/green_terracotta_planter" }
-  }
-}

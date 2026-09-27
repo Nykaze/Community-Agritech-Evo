@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:torchflower",
+      "max": 1,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:torchflower_seeds",
+  "soils": [
+    "#community_agritechevolved:farmland_soils"
+  ]
+}

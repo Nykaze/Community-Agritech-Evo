@@ -1,0 +1,24 @@
+{
+  "values": {
+    "minecraft:bone_meal": { "speed_multiplier": 1.2, "yield_multiplier": 1.2 },
+    "community_agritechevolved:crude_biomass": { "speed_multiplier": 1.1, "yield_multiplier": 1.1 },
+    "community_agritechevolved:biomass": { "speed_multiplier": 1.4, "yield_multiplier": 1.4 },
+    "community_agritechevolved:compacted_biomass": { "speed_multiplier": 1.8, "yield_multiplier": 1.8 },
+    "immersiveengineering:fertilizer": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "immersiveengineering" } ],
+      "value": { "speed_multiplier": 1.4, "yield_multiplier": 1.4 }
+    },
+    "forbidden_arcanus:arcane_bone_meal": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "forbidden_arcanus" } ],
+      "value": { "speed_multiplier": 1.5, "yield_multiplier": 1.5 }
+    },
+    "mysticalagriculture:mystical_fertilizer": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagriculture" } ],
+      "value": { "speed_multiplier": 1.6, "yield_multiplier": 1.6 }
+    },
+    "mysticalagriculture:fertilized_essence": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagriculture" } ],
+      "value": { "speed_multiplier": 1.4, "yield_multiplier": 1.4 }
+    }
+  }
+}

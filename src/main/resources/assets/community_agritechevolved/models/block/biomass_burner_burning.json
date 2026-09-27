@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "community_agritechevolved:block/burner_front_on",
+    "south": "community_agritechevolved:block/burner_sides",
+    "east": "community_agritechevolved:block/burner_sides",
+    "west": "community_agritechevolved:block/burner_sides",
+    "up": "community_agritechevolved:block/burner_top_bottom",
+    "down": "community_agritechevolved:block/burner_top_bottom",
+    "particle": "community_agritechevolved:block/burner_front_on"
+  }
+}

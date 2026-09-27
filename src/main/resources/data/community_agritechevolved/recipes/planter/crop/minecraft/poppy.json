@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:poppy",
+      "max": 1,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:poppy",
+  "soils": [
+    "#community_agritechevolved:dirt_soils"
+  ]
+}

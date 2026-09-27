@@ -2,7 +2,7 @@ package com.misterd.agritechevolved.integration;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.bus.api.Event;
+import net.minecraftforge.eventbus.api.Event;
 
 /**
  * Fired each growth tick after all built-in modifiers (soil, fertilizer, modules,

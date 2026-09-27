@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "silentgear"
+    }
+  ],
+  "type": "community_agritechevolved:crop",
+  "seed": "silentgear:flax_seeds",
+  "soils": [
+    "#community_agritechevolved:farmland_soils"
+  ],
+  "drops": [
+    {
+      "item": "silentgear:flax_fiber",
+      "min": 1,
+      "max": 4,
+      "chance": 1.0
+    },
+    {
+      "item": "silentgear:flax_seeds",
+      "min": 1,
+      "max": 1,
+      "chance": 0.2
+    },
+    {
+      "item": "silentgear:flax_flowers",
+      "min": 1,
+      "max": 1,
+      "chance": 0.2
+    }
+  ]
+}

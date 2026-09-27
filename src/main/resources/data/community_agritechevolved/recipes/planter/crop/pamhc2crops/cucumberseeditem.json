@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "pamhc2crops"
+    }
+  ],
+  "type": "community_agritechevolved:crop",
+  "seed": "pamhc2crops:cucumberseeditem",
+  "soils": [
+    "#community_agritechevolved:farmland_soils"
+  ],
+  "drops": [
+    {
+      "item": "pamhc2crops:cucumberitem",
+      "min": 2,
+      "max": 4,
+      "chance": 1.0
+    }
+  ]
+}

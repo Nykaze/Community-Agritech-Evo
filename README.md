@@ -1,8 +1,17 @@
 ![ATE](https://raw.githubusercontent.com/deonjonker123/AgritechEvolved/refs/heads/26.1.2/ate_ban.png)
 
-# Agritech: Evolved (ATE)
+# Community AgriTech Evo
+
+An unofficial Forge 1.20.1 backport of [Agritech: Evolved](https://github.com/deonjonker123/AgritechEvolved) by MisterD Modding.
 
 Farming automation mod with planters, machines, modules, and power gen.
+
+## Credits
+
+- **Original mod** — Agritech: Evolved, created by **MisterD Modding**. All original design, code, assets and data are theirs, reused here under the MIT License.
+- **1.20.1 backport** — done by **Nykaze**.
+
+This is not an official release of Agritech: Evolved. See `CREDITS.txt` for the full breakdown and `LICENSE.txt` for licensing.
 
 ## Planters
 

@@ -6,7 +6,6 @@ import com.misterd.agritechevolved.datamap.ATEDataMaps;
 import com.misterd.agritechevolved.gui.ATEMenuTypes;
 import com.misterd.agritechevolved.util.ATETags;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -16,8 +15,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class AdvancedPlanterMenu extends AbstractContainerMenu {
 
@@ -55,30 +53,43 @@ public class AdvancedPlanterMenu extends AbstractContainerMenu {
     }
 
     private void addBlockEntitySlots() {
-        addSlot(new AdvancedSlot(blockEntity, SLOT_PLANT, 8, 19));
-        addSlot(new AdvancedSlot(blockEntity, SLOT_SOIL, 8, 55));
-        addSlot(new AdvancedSlot(blockEntity, SLOT_MODULE_1, 134, 19));
-        addSlot(new AdvancedSlot(blockEntity, SLOT_MODULE_2, 134, 37));
-        addSlot(new AdvancedSlot(blockEntity, SLOT_FERTILIZER, 134, 55));
+        addSlot(new SlotItemHandler(blockEntity.inventory, SLOT_PLANT, 8, 19) {
+            @Override
+            public int getMaxStackSize() {
+                return 1;
+            }
+        });
+        addSlot(new SlotItemHandler(blockEntity.inventory, SLOT_SOIL, 8, 55) {
+            @Override
+            public int getMaxStackSize() {
+                return 1;
+            }
+        });
+        addSlot(new ModuleSlot(blockEntity, SLOT_MODULE_1, 134, 19));
+        addSlot(new ModuleSlot(blockEntity, SLOT_MODULE_2, 134, 37));
+        addSlot(new SlotItemHandler(blockEntity.inventory, SLOT_FERTILIZER, 134, 55) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return isFertilizer(level, stack);
+            }
+        });
 
         int idx = SLOT_OUTPUT_MIN;
         for (int row = 0; row < 3; row++)
             for (int col = 0; col < 4; col++)
-                addSlot(new AdvancedSlot(blockEntity, idx++, 44 + col * 18, 19 + row * 18));
+                addSlot(new OutputSlot(blockEntity, idx++, 44 + col * 18, 19 + row * 18));
     }
 
     private void addDataSlots() {
         addDataSlot(new DataSlot() {
             @Override
             public int get() { return blockEntity.getEnergyStored(); }
-
             @Override
             public void set(int value) { lastEnergyStored = value; }
         });
         addDataSlot(new DataSlot() {
             @Override
             public int get() { return Math.round(blockEntity.getGrowthProgress() * 1000.0F); }
-
             @Override
             public void set(int value) { lastGrowthProgress = value; }
         });
@@ -123,27 +134,24 @@ public class AdvancedPlanterMenu extends AbstractContainerMenu {
             if (!blockEntity.getStack(SLOT_PLANT).isEmpty()) return false;
             ItemStack soil = blockEntity.getStack(SLOT_SOIL);
             if (!soil.isEmpty() && !blockEntity.isValidPlantSoilCombination(stack, soil)) return false;
-            insertSingle(stack, SLOT_PLANT);
-            return true;
+            return moveItemStackTo(stack, TE_FIRST_SLOT + SLOT_PLANT, TE_FIRST_SLOT + SLOT_PLANT + 1, false);
         }
 
         if (blockEntity.isValidSoilForAnyRecipe(stack)) {
             if (!blockEntity.getStack(SLOT_SOIL).isEmpty()) return false;
             ItemStack plant = blockEntity.getStack(SLOT_PLANT);
             if (!plant.isEmpty() && !blockEntity.isValidPlantSoilCombination(plant, stack)) return false;
-            insertSingle(stack, SLOT_SOIL);
-            return true;
+            return moveItemStackTo(stack, TE_FIRST_SLOT + SLOT_SOIL, TE_FIRST_SLOT + SLOT_SOIL + 1, false);
         }
 
-        if (isFertilizer(stack)) {
-            return insertIntoBlockEntity(stack, SLOT_FERTILIZER, SLOT_FERTILIZER + 1);
+        if (isFertilizer(level, stack)) {
+            return moveItemStackTo(stack, TE_FIRST_SLOT + SLOT_FERTILIZER, TE_FIRST_SLOT + SLOT_FERTILIZER + 1, false);
         }
 
         if (stack.is(ATETags.Items.ATE_MODULES)) {
             for (int slot = SLOT_MODULE_1; slot <= SLOT_MODULE_2; slot++) {
                 if (blockEntity.getStack(slot).isEmpty()) {
-                    insertSingle(stack, slot);
-                    return true;
+                    return moveItemStackTo(stack, TE_FIRST_SLOT + slot, TE_FIRST_SLOT + slot + 1, false);
                 }
             }
             return false;
@@ -152,49 +160,9 @@ public class AdvancedPlanterMenu extends AbstractContainerMenu {
         return false;
     }
 
-    private static boolean isFertilizer(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem().builtInRegistryHolder().getData(ATEDataMaps.FERTILIZERS) != null;
-    }
-
-    private boolean insertIntoBlockEntity(ItemStack stack, int startSlot, int endSlot) {
+    private static boolean isFertilizer(Level level, ItemStack stack) {
         if (stack.isEmpty()) return false;
-        int inserted = 0;
-
-        for (int i = startSlot; i < endSlot && !stack.isEmpty(); i++) {
-            ItemStack existing = blockEntity.getStack(i);
-            if (existing.isEmpty() || !ItemStack.isSameItemSameComponents(existing, stack)) continue;
-            int space = stack.getMaxStackSize() - existing.getCount();
-            if (space <= 0) continue;
-            int toInsert = Math.min(space, stack.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int actual = blockEntity.inventory.insert(i, ItemResource.of(stack), toInsert, tx);
-                tx.commit();
-                stack.shrink(actual);
-                inserted += actual;
-            }
-        }
-
-        for (int i = startSlot; i < endSlot && !stack.isEmpty(); i++) {
-            if (!blockEntity.getStack(i).isEmpty()) continue;
-            if (!blockEntity.inventory.isValid(i, ItemResource.of(stack))) continue;
-            int toInsert = Math.min(stack.getMaxStackSize(), stack.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int actual = blockEntity.inventory.insert(i, ItemResource.of(stack), toInsert, tx);
-                tx.commit();
-                stack.shrink(actual);
-                inserted += actual;
-            }
-        }
-
-        return inserted > 0;
-    }
-
-    private void insertSingle(ItemStack stack, int slot) {
-        try (Transaction tx = Transaction.openRoot()) {
-            blockEntity.inventory.insert(slot, ItemResource.of(stack), 1, tx);
-            tx.commit();
-        }
-        stack.shrink(1);
+        return ATEDataMaps.getFertilizer(level, stack.getItem()) != null;
     }
 
     @Override
@@ -214,67 +182,30 @@ public class AdvancedPlanterMenu extends AbstractContainerMenu {
             addSlot(new Slot(inv, i, 8 + i * 18, 146));
     }
 
-    private static class AdvancedSlot extends Slot {
-        private final AdvancedPlanterBlockEntity be;
-        private final int index;
-
-        AdvancedSlot(AdvancedPlanterBlockEntity be, int index, int x, int y) {
-            super(new SimpleContainer(be.inventory.size()), index, x, y);
-            this.be = be;
-            this.index = index;
-            container.setItem(index, be.getStack(index));
-        }
-
-        @Override
-        public ItemStack getItem() {
-            Level lvl = be.getLevel();
-            if (lvl != null && lvl.isClientSide()) return container.getItem(index);
-            return be.getStack(index);
-        }
-
-        @Override
-        public void set(ItemStack stack) {
-            container.setItem(index, stack.copy());
-            Level lvl = be.getLevel();
-            if (lvl == null || lvl.isClientSide()) {
-                setChanged();
-                return;
-            }
-            try (Transaction tx = Transaction.openRoot()) {
-                ItemStack existing = be.getStack(index);
-                if (!existing.isEmpty())
-                    be.inventory.extract(index, ItemResource.of(existing), existing.getCount(), tx);
-                if (!stack.isEmpty()) {
-                    long cap = be.inventory.getCapacityAsLong(index, ItemResource.of(stack));
-                    be.inventory.insert(index, ItemResource.of(stack), (int) Math.min(stack.getCount(), cap), tx);
-                }
-                tx.commit();
-            }
-            setChanged();
+    private static class ModuleSlot extends SlotItemHandler {
+        ModuleSlot(AdvancedPlanterBlockEntity be, int index, int x, int y) {
+            super(be.inventory, index, x, y);
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return be.inventory.isValid(index, ItemResource.of(stack));
+            return stack.is(ATETags.Items.ATE_MODULES);
         }
 
         @Override
         public int getMaxStackSize() {
-            return (index == SLOT_PLANT || index == SLOT_SOIL || index == SLOT_MODULE_1 || index == SLOT_MODULE_2)
-                    ? 1
-                    : 64;
+            return 1;
+        }
+    }
+
+    private static class OutputSlot extends SlotItemHandler {
+        OutputSlot(AdvancedPlanterBlockEntity be, int index, int x, int y) {
+            super(be.inventory, index, x, y);
         }
 
         @Override
-        public ItemStack remove(int amount) {
-            ItemStack existing = be.getStack(index);
-            if (existing.isEmpty()) return ItemStack.EMPTY;
-            int toExtract = Math.min(amount, existing.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int extracted = be.inventory.extract(index, ItemResource.of(existing), toExtract, tx);
-                tx.commit();
-                return existing.copyWithCount(extracted);
-            }
+        public boolean mayPlace(ItemStack stack) {
+            return false;
         }
     }
 }

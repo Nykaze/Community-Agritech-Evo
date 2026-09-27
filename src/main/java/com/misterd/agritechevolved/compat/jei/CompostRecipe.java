@@ -3,13 +3,12 @@ package com.misterd.agritechevolved.compat.jei;
 import com.misterd.agritechevolved.item.ATEItems;
 import com.misterd.agritechevolved.util.RegistryHelper;
 import com.mojang.logging.LogUtils;
-import mezz.jei.api.recipe.category.extensions.IRecipeCategoryExtension;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.List;
 
-public class CompostRecipe implements IRecipeCategoryExtension {
+public class CompostRecipe {
 
     private final Ingredient input;
     private final List<ItemStack> outputs;

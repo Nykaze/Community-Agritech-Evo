@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    }
+  ],
+  "type": "community_agritechevolved:tree",
+  "sapling": "croptopia:cinnamon_sapling",
+  "soils": [
+    "#community_agritechevolved:tree_soils"
+  ],
+  "drops": [
+    {
+      "item": "croptopia:cinnamon_log",
+      "min": 4,
+      "max": 6,
+      "chance": 1.0
+    },
+    {
+      "item": "croptopia:cinnamon_sapling",
+      "min": 1,
+      "max": 1,
+      "chance": 0.3
+    },
+    {
+      "item": "minecraft:stick",
+      "min": 1,
+      "max": 2,
+      "chance": 0.5
+    }
+  ]
+}

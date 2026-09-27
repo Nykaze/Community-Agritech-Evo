@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:durability_shapeless",
+  "category": "misc",
+  "durability_per_item": 1,
+  "ingredients": [
+    [
+      "community_agritechevolved:mulch"
+    ]
+  ],
+  "result": {
+    "Count": 1,
+    "id": "community_agritechevolved:infused_farmland"
+  },
+  "tool": "#minecraft:hoes"
+}

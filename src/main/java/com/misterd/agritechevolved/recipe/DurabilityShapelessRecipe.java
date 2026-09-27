@@ -1,22 +1,32 @@
 package com.misterd.agritechevolved.recipe;
 
+import com.misterd.agritechevolved.AgritechEvolved;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 public class DurabilityShapelessRecipe extends CustomRecipe {
-    private final ItemStackTemplate result;
+    private final ItemStack result;
     private final NonNullList<Ingredient> ingredients;
     private final Ingredient toolIngredient;
     private final int durabilityPerItem;
     private final CraftingBookCategory bookCategory;
 
-    public DurabilityShapelessRecipe(CraftingBookCategory category, ItemStackTemplate result,
+    public DurabilityShapelessRecipe(CraftingBookCategory category, ItemStack result,
                                      NonNullList<Ingredient> ingredients, Ingredient toolIngredient,
                                      int durabilityPerItem) {
-        super();
+        this(new ResourceLocation(AgritechEvolved.MODID, "durability_shapeless"), category, result,
+                ingredients, toolIngredient, durabilityPerItem);
+    }
+
+    public DurabilityShapelessRecipe(ResourceLocation id, CraftingBookCategory category, ItemStack result,
+                                     NonNullList<Ingredient> ingredients, Ingredient toolIngredient,
+                                     int durabilityPerItem) {
+        super(id, category);
         this.bookCategory = category;
         this.result = result;
         this.ingredients = ingredients;
@@ -30,14 +40,14 @@ public class DurabilityShapelessRecipe extends CustomRecipe {
     }
 
     @Override
-    public boolean matches(CraftingInput input, Level level) {
+    public boolean matches(CraftingContainer input, Level level) {
         NonNullList<Ingredient> remaining = NonNullList.create();
         remaining.addAll(ingredients);
         boolean foundTool = false;
         int totalProcessableItems = 0;
         ItemStack foundToolStack = ItemStack.EMPTY;
 
-        for (int i = 0; i < input.size(); i++) {
+        for (int i = 0; i < input.getContainerSize(); i++) {
             ItemStack stack = input.getItem(i);
             if (stack.isEmpty()) continue;
 
@@ -69,9 +79,9 @@ public class DurabilityShapelessRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input) {
+    public ItemStack assemble(CraftingContainer input, RegistryAccess registryAccess) {
         int processableItems = 0;
-        for (int i = 0; i < input.size(); i++) {
+        for (int i = 0; i < input.getContainerSize(); i++) {
             ItemStack stack = input.getItem(i);
             if (stack.isEmpty() || toolIngredient.test(stack)) continue;
             for (Ingredient ingredient : ingredients) {
@@ -81,19 +91,24 @@ public class DurabilityShapelessRecipe extends CustomRecipe {
                 }
             }
         }
-        ItemStack out = result.create();
+        ItemStack out = result.copy();
         out.setCount(processableItems);
         return out;
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingInput input) {
-        NonNullList<ItemStack> remaining = NonNullList.withSize(input.size(), ItemStack.EMPTY);
+    public boolean canCraftInDimensions(int width, int height) {
+        return true;
+    }
+
+    @Override
+    public NonNullList<ItemStack> getRemainingItems(CraftingContainer input) {
+        NonNullList<ItemStack> remaining = NonNullList.withSize(input.getContainerSize(), ItemStack.EMPTY);
         ItemStack toolStack = ItemStack.EMPTY;
         int toolSlot = -1;
         int processableItems = 0;
 
-        for (int i = 0; i < input.size(); i++) {
+        for (int i = 0; i < input.getContainerSize(); i++) {
             ItemStack stack = input.getItem(i);
             if (stack.isEmpty()) continue;
             if (toolIngredient.test(stack)) {
@@ -126,16 +141,12 @@ public class DurabilityShapelessRecipe extends CustomRecipe {
     }
 
     @Override
-    public RecipeSerializer<? extends CustomRecipe> getSerializer() {
-        return ATERecipe.DURABILITY_SHAPELESS_SERIALIZER.get();
+    public RecipeSerializer<? extends Recipe<?>> getSerializer() {
+        return ATERecipeTypes.DURABILITY_SHAPELESS_SERIALIZER.get();
     }
 
     public ItemStack getResult() {
-        return result.create();
-    }
-
-    public ItemStackTemplate getResultTemplate() {
-        return result;
+        return result.copy();
     }
 
     public NonNullList<Ingredient> getRecipeIngredients() {

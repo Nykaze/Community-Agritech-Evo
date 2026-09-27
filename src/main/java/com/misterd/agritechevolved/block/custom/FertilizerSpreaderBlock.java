@@ -2,15 +2,12 @@ package com.misterd.agritechevolved.block.custom;
 
 import com.misterd.agritechevolved.blockentity.ATEBlockEntities;
 import com.misterd.agritechevolved.blockentity.custom.FertilizerSpreaderBlockEntity;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -30,6 +27,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import javax.annotation.Nullable;
+import net.minecraftforge.network.NetworkHooks;
 
 public class FertilizerSpreaderBlock extends BaseEntityBlock {
 
@@ -46,7 +44,6 @@ public class FertilizerSpreaderBlock extends BaseEntityBlock {
             Block.box(0, 10, 2, 2, 16, 14),
             Block.box(14, 10, 2, 16, 16, 14)
     );
-    public static final MapCodec<FertilizerSpreaderBlock> CODEC = simpleCodec(FertilizerSpreaderBlock::new);
     public static final BooleanProperty POWERED = BooleanProperty.create("powered");
 
     public FertilizerSpreaderBlock(Properties properties) {
@@ -60,17 +57,12 @@ public class FertilizerSpreaderBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
-
-    @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
 
@@ -81,14 +73,17 @@ public class FertilizerSpreaderBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        Containers.updateNeighboursAfterDestroy(state, level, pos);
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            level.updateNeighborsAt(pos, this);
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof FertilizerSpreaderBlockEntity spreader) {
-            ((ServerPlayer) player).openMenu(new SimpleMenuProvider(spreader, Component.translatable("gui.agritechevolved.fertilizer_spreader")), pos);
+            NetworkHooks.openScreen((ServerPlayer) player, spreader, pos);
         }
         return InteractionResult.SUCCESS;
     }

@@ -1,52 +1,49 @@
 package com.misterd.agritechevolved.datagen;
 
 import com.misterd.agritechevolved.AgritechEvolved;
-import com.misterd.agritechevolved.datagen.custom.*;
+import com.misterd.agritechevolved.datagen.custom.ATEBlockTagProvider;
+import com.misterd.agritechevolved.datagen.custom.ATEItemTagProvider;
+import com.misterd.agritechevolved.datagen.custom.ATELootTableProvider;
+import com.misterd.agritechevolved.datagen.custom.ATEModelProvider;
+import com.misterd.agritechevolved.datagen.custom.ATERecipeProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.data.event.GatherDataEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = AgritechEvolved.MODID)
+@Mod.EventBusSubscriber(modid = AgritechEvolved.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class DataGenerators {
+
     @SubscribeEvent
-    public static void gatherData(GatherDataEvent.Client event) {
+    public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         PackOutput packOutput = generator.getPackOutput();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
+        ExistingFileHelper existing = event.getExistingFileHelper();
 
-        generator.addProvider(true, new LootTableProvider(packOutput, Collections.emptySet(), List.of(new LootTableProvider.SubProviderEntry(ATELootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
-        generator.addProvider(true, new ATERecipeProvider.Runner(packOutput, lookupProvider));
+        if (event.includeServer()) {
+            generator.addProvider(true, new LootTableProvider(packOutput, Collections.emptySet(),
+                    List.of(new LootTableProvider.SubProviderEntry(ATELootTableProvider::new, LootContextParamSets.BLOCK))));
 
-        BlockTagsProvider blockTagsProvider = new ATEBlockTagProvider(packOutput, lookupProvider);
-        generator.addProvider(true, blockTagsProvider);
+            generator.addProvider(true, new ATERecipeProvider(packOutput));
 
-        generator.addProvider(true, new ATEModelProvider(packOutput));
-        generator.addProvider(true, new ATEItemTagProvider(packOutput, lookupProvider));
-    }
+            ATEBlockTagProvider blockTags = new ATEBlockTagProvider(packOutput, lookupProvider, existing);
+            generator.addProvider(true, blockTags);
 
-    @SubscribeEvent
-    public static void gatherData(GatherDataEvent.Server event) {
-        DataGenerator generator = event.getGenerator();
-        PackOutput packOutput = generator.getPackOutput();
-        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
+            generator.addProvider(true, new ATEItemTagProvider(packOutput, lookupProvider, blockTags.contentsGetter(), existing));
+        }
 
-        generator.addProvider(true, new LootTableProvider(packOutput, Collections.emptySet(), List.of(new LootTableProvider.SubProviderEntry(ATELootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
-        generator.addProvider(true, new ATERecipeProvider.Runner(packOutput, lookupProvider));
-
-        BlockTagsProvider blockTagsProvider = new ATEBlockTagProvider(packOutput, lookupProvider);
-        generator.addProvider(true, blockTagsProvider);
-
-        generator.addProvider(true, new ATEModelProvider(packOutput));
-        generator.addProvider(true, new ATEItemTagProvider(packOutput, lookupProvider));
+        if (event.includeClient()) {
+            generator.addProvider(true, new ATEModelProvider(packOutput));
+        }
     }
 }

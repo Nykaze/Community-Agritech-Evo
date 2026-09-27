@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "agritechevolved:item/ym_mk3"
-  }
-}

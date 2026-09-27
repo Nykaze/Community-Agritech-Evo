@@ -1,0 +1,30 @@
+{
+  "values": [
+    "community_agritechevolved:advanced_planter",
+    "community_agritechevolved:biomass_burner",
+    "community_agritechevolved:composter",
+    "community_agritechevolved:capacitor_tier1",
+    "community_agritechevolved:capacitor_tier2",
+    "community_agritechevolved:capacitor_tier3",
+    "community_agritechevolved:silo",
+    "community_agritechevolved:fertilizer_spreader",
+    "community_agritechevolved:compacted_biomass_block",
+    "community_agritechevolved:terracotta_planter",
+    "community_agritechevolved:black_terracotta_planter",
+    "community_agritechevolved:blue_terracotta_planter",
+    "community_agritechevolved:brown_terracotta_planter",
+    "community_agritechevolved:cyan_terracotta_planter",
+    "community_agritechevolved:gray_terracotta_planter",
+    "community_agritechevolved:green_terracotta_planter",
+    "community_agritechevolved:light_blue_terracotta_planter",
+    "community_agritechevolved:light_gray_terracotta_planter",
+    "community_agritechevolved:lime_terracotta_planter",
+    "community_agritechevolved:magenta_terracotta_planter",
+    "community_agritechevolved:orange_terracotta_planter",
+    "community_agritechevolved:pink_terracotta_planter",
+    "community_agritechevolved:purple_terracotta_planter",
+    "community_agritechevolved:red_terracotta_planter",
+    "community_agritechevolved:white_terracotta_planter",
+    "community_agritechevolved:yellow_terracotta_planter"
+  ]
+}

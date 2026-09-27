@@ -5,23 +5,32 @@ import com.misterd.agritechevolved.block.ATEBlocks;
 import com.misterd.agritechevolved.item.ATEItems;
 import com.misterd.agritechevolved.util.ATETags;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.data.tags.ItemTagsProvider;
+import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.data.ItemTagsProvider;
+import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ATEItemTagProvider extends ItemTagsProvider {
-    public ATEItemTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
-        super(output, lookupProvider, AgritechEvolved.MODID);
+
+    public ATEItemTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider,
+                              CompletableFuture<TagsProvider.TagLookup<Block>> blockLookup, ExistingFileHelper existing) {
+        super(output, lookupProvider, blockLookup, AgritechEvolved.MODID, existing);
     }
 
-    private static ResourceKey<Item> key(Item item) {
-        return item.builtInRegistryHolder().key();
+    private static ResourceKey<Item> key(ItemLike itemLike) {
+        return ResourceKey.create(Registries.ITEM, ForgeRegistries.ITEMS.getKey(itemLike.asItem()));
     }
 
+    @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(ATETags.Items.BIOMASS)
                 .add(key(ATEItems.CRUDE_BIOMASS.get()))
@@ -40,35 +49,35 @@ public class ATEItemTagProvider extends ItemTagsProvider {
                 .add(key(ATEItems.RM_MK3.get()));
 
         tag(ATETags.Items.BASIC_PLANTER_ITEMS)
-                .add(key(ATEBlocks.ACACIA_PLANTER.asItem()))
-                .add(key(ATEBlocks.BAMBOO_PLANTER.asItem()))
-                .add(key(ATEBlocks.BIRCH_PLANTER.asItem()))
-                .add(key(ATEBlocks.CHERRY_PLANTER.asItem()))
-                .add(key(ATEBlocks.CRIMSON_PLANTER.asItem()))
-                .add(key(ATEBlocks.DARK_OAK_PLANTER.asItem()))
-                .add(key(ATEBlocks.JUNGLE_PLANTER.asItem()))
-                .add(key(ATEBlocks.MANGROVE_PLANTER.asItem()))
-                .add(key(ATEBlocks.OAK_PLANTER.asItem()))
-                .add(key(ATEBlocks.SPRUCE_PLANTER.asItem()))
-                .add(key(ATEBlocks.WARPED_PLANTER.asItem()))
-                .add(key(ATEBlocks.PALE_OAK_PLANTER.asItem()))
-                .add(key(ATEBlocks.TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.BLACK_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.BLUE_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.BROWN_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.CYAN_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.GRAY_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.GREEN_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.LIGHT_BLUE_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.LIGHT_GRAY_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.LIME_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.MAGENTA_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.ORANGE_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.PINK_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.PURPLE_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.RED_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.WHITE_TERRACOTTA_PLANTER.asItem()))
-                .add(key(ATEBlocks.YELLOW_TERRACOTTA_PLANTER.asItem()));
+                .add(key(ATEBlocks.ACACIA_PLANTER.get()))
+                .add(key(ATEBlocks.BAMBOO_PLANTER.get()))
+                .add(key(ATEBlocks.BIRCH_PLANTER.get()))
+                .add(key(ATEBlocks.CHERRY_PLANTER.get()))
+                .add(key(ATEBlocks.CRIMSON_PLANTER.get()))
+                .add(key(ATEBlocks.DARK_OAK_PLANTER.get()))
+                .add(key(ATEBlocks.JUNGLE_PLANTER.get()))
+                .add(key(ATEBlocks.MANGROVE_PLANTER.get()))
+                .add(key(ATEBlocks.OAK_PLANTER.get()))
+                .add(key(ATEBlocks.SPRUCE_PLANTER.get()))
+                .add(key(ATEBlocks.WARPED_PLANTER.get()))
+                .add(key(ATEBlocks.PALE_OAK_PLANTER.get()))
+                .add(key(ATEBlocks.TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.BLACK_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.BLUE_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.BROWN_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.CYAN_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.GRAY_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.GREEN_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.LIGHT_BLUE_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.LIGHT_GRAY_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.LIME_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.MAGENTA_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.ORANGE_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.PINK_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.PURPLE_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.RED_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.WHITE_TERRACOTTA_PLANTER.get()))
+                .add(key(ATEBlocks.YELLOW_TERRACOTTA_PLANTER.get()));
 
         tag(ATETags.Items.DIRT_LIKE_BLOCK_ITEMS)
                 .add(key(Blocks.DIRT.asItem()))

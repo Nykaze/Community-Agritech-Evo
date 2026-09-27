@@ -1,0 +1,16 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:sugar_cane",
+      "max": 3,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:sugar_cane",
+  "soils": [
+    "#community_agritechevolved:dirt_soils",
+    "#community_agritechevolved:sand_soils"
+  ]
+}

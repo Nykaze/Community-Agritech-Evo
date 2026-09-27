@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_basic_planter": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "community_agritechevolved:basic_planter"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "community_agritechevolved:advanced_planter"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_basic_planter",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "community_agritechevolved:advanced_planter"
+    ]
+  },
+  "sends_telemetry_event": false
+}

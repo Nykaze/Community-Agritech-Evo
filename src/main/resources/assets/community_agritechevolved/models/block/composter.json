@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "community_agritechevolved:block/composter_side",
+    "south": "community_agritechevolved:block/composter_side",
+    "east": "community_agritechevolved:block/composter_side",
+    "west": "community_agritechevolved:block/composter_side",
+    "up": "community_agritechevolved:block/composter_top",
+    "down": "community_agritechevolved:block/composter_bottom",
+    "particle": "community_agritechevolved:block/composter_top"
+  }
+}

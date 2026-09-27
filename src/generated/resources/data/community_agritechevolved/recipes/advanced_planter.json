@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "tag": "community_agritechevolved:basic_planter_items"
+    },
+    "F": {
+      "item": "minecraft:iron_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "F F",
+    "IAI",
+    "RIR"
+  ],
+  "result": {
+    "item": "community_agritechevolved:advanced_planter"
+  },
+  "show_notification": true
+}

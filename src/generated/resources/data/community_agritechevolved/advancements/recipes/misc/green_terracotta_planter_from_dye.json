@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_terracotta_planter": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "community_agritechevolved:terracotta_planter"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "community_agritechevolved:green_terracotta_planter_from_dye"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_terracotta_planter",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "community_agritechevolved:green_terracotta_planter_from_dye"
+    ]
+  },
+  "sends_telemetry_event": false
+}

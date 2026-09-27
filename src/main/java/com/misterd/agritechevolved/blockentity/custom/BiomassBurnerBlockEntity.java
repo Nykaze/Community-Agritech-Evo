@@ -7,7 +7,6 @@ import com.misterd.agritechevolved.gui.custom.BiomassBurnerMenu;
 import com.misterd.agritechevolved.util.RegistryHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -23,46 +22,50 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
-import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 
-public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvider {
+/**
+ * Forge 1.20.1 port. See {@link AdvancedPlanterBlockEntity} for the rationale behind the
+ * substitution of the NeoForge transfer API with {@link ItemStackHandler} /
+ * {@link IItemHandler} and a directly implemented {@link IEnergyStorage}.
+ */
+public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvider, IEnergyStorage {
 
-    private static final String BIOMASS = "agritechevolved:biomass";
-    private static final String CRUDE_BIOMASS = "agritechevolved:crude_biomass";
-    private static final String COMPACTED_BIOMASS = "agritechevolved:compacted_biomass";
-    private static final String COMPACTED_BIOMASS_BLOCK = "agritechevolved:compacted_biomass_block";
+    private static final String BIOMASS = "community_agritechevolved:biomass";
+    private static final String CRUDE_BIOMASS = "community_agritechevolved:crude_biomass";
+    private static final String COMPACTED_BIOMASS = "community_agritechevolved:compacted_biomass";
+    private static final String COMPACTED_BIOMASS_BLOCK = "community_agritechevolved:compacted_biomass_block";
 
-    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(1) {
+    public final ItemStackHandler inventory = new ItemStackHandler(1) {
         @Override
-        public long getCapacityAsLong(int index, ItemResource resource) {
+        public int getSlotLimit(int slot) {
             return 64;
         }
 
         @Override
-        public boolean isValid(int index, ItemResource resource) {
-            return isFuel(resource.toStack());
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return isFuel(stack);
         }
 
         @Override
-        protected void onContentsChanged(int index, ItemStack previousContents) {
+        protected void onContentsChanged(int slot) {
             BiomassBurnerBlockEntity.this.setChanged();
-            if (level != null && !level.isClientSide()) {
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            Level lvl = BiomassBurnerBlockEntity.this.level;
+            if (lvl != null && !lvl.isClientSide()) {
+                lvl.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
         }
     };
+
+    private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> new FuelHandler(this));
+    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> this);
 
     private int energyStored = 0;
     private int progress = 0;
@@ -157,10 +160,7 @@ public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvide
         progress = 0;
         isBurning = true;
 
-        try (Transaction tx = Transaction.openRoot()) {
-            inventory.extract(0, ItemResource.of(fuel), 1, tx);
-            tx.commit();
-        }
+        inventory.extractItem(0, 1, false);
     }
 
     private void completeBurning() {
@@ -176,21 +176,21 @@ public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvide
         boolean distributed = false;
         for (Direction dir : Direction.values()) {
             BlockPos neighborPos = worldPosition.relative(dir);
-            if (level.getBlockEntity(neighborPos) == null) continue;
+            BlockEntity neighborBe = level.getBlockEntity(neighborPos);
+            if (neighborBe == null) continue;
 
-            EnergyHandler neighbor = level.getCapability(Capabilities.Energy.BLOCK, neighborPos, dir.getOpposite());
+            IEnergyStorage neighbor = neighborBe
+                    .getCapability(ForgeCapabilities.ENERGY, dir.getOpposite())
+                    .resolve().orElse(null);
             if (neighbor == null) continue;
 
             int toTransfer = Math.min(1000, energyStored);
             if (toTransfer <= 0) continue;
 
-            try (Transaction tx = Transaction.openRoot()) {
-                int transferred = neighbor.insert(toTransfer, tx);
-                if (transferred > 0) {
-                    energyStored -= transferred;
-                    tx.commit();
-                    distributed = true;
-                }
+            int transferred = neighbor.receiveEnergy(toTransfer, false);
+            if (transferred > 0) {
+                energyStored -= transferred;
+                distributed = true;
             }
         }
         return distributed;
@@ -203,122 +203,125 @@ public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvide
                 || id.equals(COMPACTED_BIOMASS) || id.equals(COMPACTED_BIOMASS_BLOCK);
     }
 
-    public ResourceHandler<ItemResource> getItemHandler(@Nullable Direction side) {
-        return new ResourceHandler<>() {
-            @Override
-            public int size() {
-                return inventory.size();
-            }
-
-            @Override
-            public ItemResource getResource(int index) {
-                return inventory.getResource(index);
-            }
-
-            @Override
-            public long getAmountAsLong(int index) {
-                return inventory.getAmountAsLong(index);
-            }
-
-            @Override
-            public long getCapacityAsLong(int index, ItemResource resource) {
-                return inventory.getCapacityAsLong(index, resource);
-            }
-
-            @Override
-            public boolean isValid(int index, ItemResource resource) {
-                return isFuel(resource.toStack());
-            }
-
-            @Override
-            public int insert(int index, ItemResource resource, int amount, TransactionContext tx) {
-                if (!isFuel(resource.toStack())) return 0;
-                return inventory.insert(index, resource, amount, tx);
-            }
-
-            @Override
-            public int extract(int index, ItemResource resource, int amount, TransactionContext tx) {
-                return inventory.extract(index, resource, amount, tx);
-            }
-        };
+    public IItemHandler getItemHandler() {
+        return itemHandler.resolve().orElse(null);
     }
 
-    public EnergyHandler getEnergyHandler(@Nullable Direction side) {
-        return new BEEnergyHandler(this);
-    }
-
-    private static class BEEnergyHandler extends SnapshotJournal<Integer> implements EnergyHandler {
+    private static class FuelHandler implements IItemHandler {
         private final BiomassBurnerBlockEntity be;
 
-        BEEnergyHandler(BiomassBurnerBlockEntity be) { this.be = be; }
-
-        @Override
-        protected Integer createSnapshot() {
-            return be.energyStored;
-        }
-
-        @Override protected void revertToSnapshot(Integer snapshot) {
-            be.energyStored = snapshot;
+        FuelHandler(BiomassBurnerBlockEntity be) {
+            this.be = be;
         }
 
         @Override
-        protected void onRootCommit(Integer originalState) {
-            be.setChanged();
+        public int getSlots() {
+            return be.inventory.getSlots();
         }
 
         @Override
-        public long getAmountAsLong() {
-            return be.energyStored;
+        public ItemStack getStackInSlot(int slot) {
+            return be.inventory.getStackInSlot(slot);
         }
 
         @Override
-        public long getCapacityAsLong() {
-            return Config.getBurnerEnergyBuffer();
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            if (!isFuel(stack)) return stack;
+            return be.inventory.insertItem(slot, stack, simulate);
         }
 
         @Override
-        public int insert(int amount, TransactionContext tx) {
-            return 0;
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            return be.inventory.extractItem(slot, amount, simulate);
         }
 
         @Override
-        public int extract(int amount, TransactionContext tx) {
-            int extracted = Math.min(amount, be.energyStored);
-            if (extracted <= 0) return 0;
-            updateSnapshots(tx);
-            be.energyStored -= extracted;
-            return extracted;
+        public int getSlotLimit(int slot) {
+            return be.inventory.getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return isFuel(stack);
         }
     }
 
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ATEBlockEntities.BURNER_BE.get(),
-                (be, dir) -> be instanceof BiomassBurnerBlockEntity b ? b.getItemHandler(dir) : null);
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ATEBlockEntities.BURNER_BE.get(),
-                (be, dir) -> be instanceof BiomassBurnerBlockEntity b ? b.getEnergyHandler(dir) : null);
-    }
+    // ------------------------------------------------------------------ energy
 
-    public ItemStack getStack(int slot) {
-        ItemResource res = inventory.getResource(slot);
-        if (res.isEmpty()) return ItemStack.EMPTY;
-        return res.toStack(inventory.getAmountAsInt(slot));
+    /**
+     * The burner only ever pushes energy out, so this is an extract-only buffer.
+     */
+    @Override
+    public int getEnergyStored() {
+        return energyStored;
     }
 
     @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    public int getMaxEnergyStored() {
+        return Config.getBurnerEnergyBuffer();
+    }
+
+    @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        return 0;
+    }
+
+    @Override
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        int extracted = Math.min(maxExtract, energyStored);
+        if (extracted <= 0) return 0;
+        if (!simulate) {
+            energyStored -= extracted;
+            setChanged();
+        }
+        return extracted;
+    }
+
+    @Override
+    public boolean canExtract() {
+        return true;
+    }
+
+    @Override
+    public boolean canReceive() {
+        return false;
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast();
+        if (cap == ForgeCapabilities.ITEM_HANDLER) return itemHandler.cast();
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        itemHandler.invalidate();
+        energyCapability.invalidate();
+    }
+
+    // ------------------------------------------------------------------ sync
+
+    public ItemStack getStack(int slot) {
+        return inventory.getStackInSlot(slot);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
         drops();
     }
 
     public void drops() {
-        SimpleContainer inv = new SimpleContainer(inventory.size());
-        for (int i = 0; i < inventory.size(); i++) {
+        SimpleContainer inv = new SimpleContainer(inventory.getSlots());
+        for (int i = 0; i < inventory.getSlots(); i++) {
             inv.setItem(i, getStack(i));
         }
         Containers.dropContents(level, worldPosition, inv);
-    }
-
-    public int getEnergyStored() {
-        return energyStored;
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            inventory.setStackInSlot(i, ItemStack.EMPTY);
+        }
     }
 
     public int getMaxEnergy() {
@@ -338,25 +341,27 @@ public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvide
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        inventory.serialize(output);
-        output.putInt("energyStored", energyStored);
-        output.putInt("progress", progress);
-        output.putInt("maxProgress", maxProgress);
-        output.putInt("currentBurnValue", currentBurnValue);
-        output.putBoolean("isBurning", isBurning);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.put("Items", inventory.serializeNBT());
+        tag.putInt("energyStored", energyStored);
+        tag.putInt("progress", progress);
+        tag.putInt("maxProgress", maxProgress);
+        tag.putInt("currentBurnValue", currentBurnValue);
+        tag.putBoolean("isBurning", isBurning);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        inventory.deserialize(input);
-        energyStored = input.getIntOr("energyStored", 0);
-        progress = input.getIntOr("progress", 0);
-        maxProgress = input.getIntOr("maxProgress", 0);
-        currentBurnValue = input.getIntOr("currentBurnValue", 0);
-        isBurning = input.getBooleanOr("isBurning", false);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("Items")) {
+            inventory.deserializeNBT(tag.getCompound("Items"));
+        }
+        energyStored = tag.getInt("energyStored");
+        progress = tag.getInt("progress");
+        maxProgress = tag.getInt("maxProgress");
+        currentBurnValue = tag.getInt("currentBurnValue");
+        isBurning = tag.getBoolean("isBurning");
     }
 
     @Override
@@ -366,25 +371,13 @@ public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvide
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
-    }
-
-    @Override
-    public void setChanged() {
-        super.setChanged();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("gui.agritechevolved.biomass_burner");
+        return Component.translatable("gui.community_agritechevolved.biomass_burner");
     }
 
     @Override

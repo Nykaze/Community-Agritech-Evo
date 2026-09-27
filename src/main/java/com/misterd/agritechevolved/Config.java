@@ -1,78 +1,78 @@
 package com.misterd.agritechevolved;
 
 import com.mojang.logging.LogUtils;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.config.ModConfigEvent;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import org.slf4j.Logger;
 
 public class Config {
     public static final Logger LOGGER = LogUtils.getLogger();
-    public static final ModConfigSpec.Builder COMMON_BUILDER = new ModConfigSpec.Builder();
-    public static ModConfigSpec COMMON_CONFIG;
-    public static ModConfigSpec SPEC;
+    public static final ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
+    public static ForgeConfigSpec COMMON_CONFIG;
+    public static ForgeConfigSpec SPEC;
 
-    public static ModConfigSpec.DoubleValue SPEED_MODULE_MK1_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue SPEED_MODULE_MK1_POWER_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue SPEED_MODULE_MK2_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue SPEED_MODULE_MK2_POWER_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue SPEED_MODULE_MK3_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue SPEED_MODULE_MK3_POWER_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue YIELD_MODULE_MK1_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue YIELD_MODULE_MK1_SPEED_PENALTY;
-    public static ModConfigSpec.DoubleValue YIELD_MODULE_MK2_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue YIELD_MODULE_MK2_SPEED_PENALTY;
-    public static ModConfigSpec.DoubleValue YIELD_MODULE_MK3_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue YIELD_MODULE_MK3_SPEED_PENALTY;
+    public static ForgeConfigSpec.DoubleValue SPEED_MODULE_MK1_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue SPEED_MODULE_MK1_POWER_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue SPEED_MODULE_MK2_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue SPEED_MODULE_MK2_POWER_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue SPEED_MODULE_MK3_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue SPEED_MODULE_MK3_POWER_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue YIELD_MODULE_MK1_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue YIELD_MODULE_MK1_SPEED_PENALTY;
+    public static ForgeConfigSpec.DoubleValue YIELD_MODULE_MK2_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue YIELD_MODULE_MK2_SPEED_PENALTY;
+    public static ForgeConfigSpec.DoubleValue YIELD_MODULE_MK3_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue YIELD_MODULE_MK3_SPEED_PENALTY;
 
-    public static ModConfigSpec.IntValue PLANTER_BASE_POWER_CONSUMPTION;
-    public static ModConfigSpec.IntValue PLANTER_BASE_PROCESSING_TIME;
-    public static ModConfigSpec.IntValue PLANTER_ENERGY_BUFFER;
-    public static ModConfigSpec.IntValue ADVANCED_PLANTER_BASE_PROCESSING_TIME;
+    public static ForgeConfigSpec.IntValue PLANTER_BASE_POWER_CONSUMPTION;
+    public static ForgeConfigSpec.IntValue PLANTER_BASE_PROCESSING_TIME;
+    public static ForgeConfigSpec.IntValue PLANTER_ENERGY_BUFFER;
+    public static ForgeConfigSpec.IntValue ADVANCED_PLANTER_BASE_PROCESSING_TIME;
 
-    public static ModConfigSpec.DoubleValue CLOCHE_SPEED_MULTIPLIER;
-    public static ModConfigSpec.DoubleValue CLOCHE_YIELD_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue CLOCHE_SPEED_MULTIPLIER;
+    public static ForgeConfigSpec.DoubleValue CLOCHE_YIELD_MULTIPLIER;
 
-    public static ModConfigSpec.IntValue COMPOSTER_BASE_POWER_CONSUMPTION;
-    public static ModConfigSpec.IntValue COMPOSTER_BASE_PROCESSING_TIME;
-    public static ModConfigSpec.IntValue COMPOSTER_ENERGY_BUFFER;
+    public static ForgeConfigSpec.IntValue COMPOSTER_BASE_POWER_CONSUMPTION;
+    public static ForgeConfigSpec.IntValue COMPOSTER_BASE_PROCESSING_TIME;
+    public static ForgeConfigSpec.IntValue COMPOSTER_ENERGY_BUFFER;
 
-    public static ModConfigSpec.IntValue BURNER_ENERGY_BUFFER;
-    public static ModConfigSpec.IntValue BURNER_BIOMASS_RF_VALUE;
-    public static ModConfigSpec.IntValue BURNER_BIOMASS_BURN_DURATION;
-    public static ModConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_RF_VALUE;
-    public static ModConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BURN_DURATION;
-    public static ModConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BLOCK_RF_VALUE;
-    public static ModConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BLOCK_BURN_DURATION;
-    public static ModConfigSpec.IntValue BURNER_CRUDE_BIOMASS_RF_VALUE;
-    public static ModConfigSpec.IntValue BURNER_CRUDE_BIOMASS_BURN_DURATION;
+    public static ForgeConfigSpec.IntValue BURNER_ENERGY_BUFFER;
+    public static ForgeConfigSpec.IntValue BURNER_BIOMASS_RF_VALUE;
+    public static ForgeConfigSpec.IntValue BURNER_BIOMASS_BURN_DURATION;
+    public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_RF_VALUE;
+    public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BURN_DURATION;
+    public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BLOCK_RF_VALUE;
+    public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BLOCK_BURN_DURATION;
+    public static ForgeConfigSpec.IntValue BURNER_CRUDE_BIOMASS_RF_VALUE;
+    public static ForgeConfigSpec.IntValue BURNER_CRUDE_BIOMASS_BURN_DURATION;
 
-    public static ModConfigSpec.IntValue CAPACITOR_T1_BUFFER;
-    public static ModConfigSpec.IntValue CAPACITOR_T1_TRANSFER_RATE;
-    public static ModConfigSpec.IntValue CAPACITOR_T2_BUFFER;
-    public static ModConfigSpec.IntValue CAPACITOR_T2_TRANSFER_RATE;
-    public static ModConfigSpec.IntValue CAPACITOR_T3_BUFFER;
-    public static ModConfigSpec.IntValue CAPACITOR_T3_TRANSFER_RATE;
+    public static ForgeConfigSpec.IntValue CAPACITOR_T1_BUFFER;
+    public static ForgeConfigSpec.IntValue CAPACITOR_T1_TRANSFER_RATE;
+    public static ForgeConfigSpec.IntValue CAPACITOR_T2_BUFFER;
+    public static ForgeConfigSpec.IntValue CAPACITOR_T2_TRANSFER_RATE;
+    public static ForgeConfigSpec.IntValue CAPACITOR_T3_BUFFER;
+    public static ForgeConfigSpec.IntValue CAPACITOR_T3_TRANSFER_RATE;
 
-    public static ModConfigSpec.IntValue SILO_BASE_RANGE;
-    public static ModConfigSpec.IntValue SILO_ENERGY_BUFFER;
-    public static ModConfigSpec.IntValue SILO_BASE_POWER_CONSUMPTION;
-    public static ModConfigSpec.IntValue SILO_PULL_INTERVAL;
+    public static ForgeConfigSpec.IntValue SILO_BASE_RANGE;
+    public static ForgeConfigSpec.IntValue SILO_ENERGY_BUFFER;
+    public static ForgeConfigSpec.IntValue SILO_BASE_POWER_CONSUMPTION;
+    public static ForgeConfigSpec.IntValue SILO_PULL_INTERVAL;
 
-    public static ModConfigSpec.IntValue FERTILIZER_SPREADER_BASE_RANGE;
-    public static ModConfigSpec.IntValue FERTILIZER_SPREADER_ENERGY_BUFFER;
-    public static ModConfigSpec.IntValue FERTILIZER_SPREADER_BASE_POWER_CONSUMPTION;
-    public static ModConfigSpec.IntValue FERTILIZER_SPREADER_PUSH_INTERVAL;
-    public static ModConfigSpec.IntValue FERTILIZER_SPREADER_PUSH_AMOUNT;
+    public static ForgeConfigSpec.IntValue FERTILIZER_SPREADER_BASE_RANGE;
+    public static ForgeConfigSpec.IntValue FERTILIZER_SPREADER_ENERGY_BUFFER;
+    public static ForgeConfigSpec.IntValue FERTILIZER_SPREADER_BASE_POWER_CONSUMPTION;
+    public static ForgeConfigSpec.IntValue FERTILIZER_SPREADER_PUSH_INTERVAL;
+    public static ForgeConfigSpec.IntValue FERTILIZER_SPREADER_PUSH_AMOUNT;
 
-    public static void register(ModContainer container) {
+    public static void register() {
         moduleConfig();
         machineConfig();
         COMMON_CONFIG = COMMON_BUILDER.build();
         SPEC = COMMON_CONFIG;
-        container.registerConfig(ModConfig.Type.COMMON, COMMON_CONFIG);
+        net.minecraftforge.fml.ModLoadingContext.get()
+                .registerConfig(ModConfig.Type.COMMON, COMMON_CONFIG);
     }
 
     private static void moduleConfig() {

@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:open_eyeblossom",
+      "max": 1,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:open_eyeblossom",
+  "soils": [
+    "#community_agritechevolved:dirt_soils"
+  ]
+}

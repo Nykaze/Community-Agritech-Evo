@@ -3,13 +3,12 @@ package com.misterd.agritechevolved.compat.jei;
 import com.misterd.agritechevolved.recipe.CropRecipe;
 import com.misterd.agritechevolved.recipe.DropEntry;
 import com.misterd.agritechevolved.recipe.TreeRecipe;
-import mezz.jei.api.recipe.category.extensions.IRecipeCategoryExtension;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
 import java.util.List;
 
-public class PlanterRecipe implements IRecipeCategoryExtension {
+public class PlanterRecipe {
     private final Ingredient plant;
     private final List<Ingredient> soils;
     private final List<ItemStack> outputs;

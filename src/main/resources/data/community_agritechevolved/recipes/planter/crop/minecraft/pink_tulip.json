@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:pink_tulip",
+      "max": 1,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:pink_tulip",
+  "soils": [
+    "#community_agritechevolved:dirt_soils"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "pamhc2trees"
+    }
+  ],
+  "type": "community_agritechevolved:tree",
+  "sapling": "pamhc2trees:peppercorn_sapling",
+  "soils": [
+    "#community_agritechevolved:tree_soils"
+  ],
+  "drops": [
+    {
+      "item": "minecraft:jungle_log",
+      "min": 4,
+      "max": 8,
+      "chance": 1.0
+    },
+    {
+      "item": "pamhc2trees:peppercorn_sapling",
+      "min": 1,
+      "max": 1,
+      "chance": 0.3
+    },
+    {
+      "item": "pamhc2trees:peppercornitem",
+      "min": 1,
+      "max": 1,
+      "chance": 1.0
+    },
+    {
+      "item": "minecraft:stick",
+      "min": 1,
+      "max": 2,
+      "chance": 0.5
+    }
+  ]
+}

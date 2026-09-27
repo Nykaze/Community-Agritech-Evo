@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "cloched=false": { "model": "community_agritechevolved:block/light_gray_terracotta_planter" },
+    "cloched=true":  { "model": "community_agritechevolved:block/light_gray_terracotta_planter" }
+  }
+}

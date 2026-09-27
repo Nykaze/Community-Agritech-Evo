@@ -1,0 +1,21 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:beetroot",
+      "max": 1,
+      "min": 1
+    },
+    {
+      "chance": 0.5,
+      "item": "minecraft:beetroot_seeds",
+      "max": 2,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:beetroot_seeds",
+  "soils": [
+    "#community_agritechevolved:farmland_soils"
+  ]
+}

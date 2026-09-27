@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:oxeye_daisy",
+      "max": 1,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:oxeye_daisy",
+  "soils": [
+    "#community_agritechevolved:dirt_soils"
+  ]
+}

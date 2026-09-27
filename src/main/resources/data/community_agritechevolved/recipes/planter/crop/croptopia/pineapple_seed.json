@@ -1,0 +1,27 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "croptopia"
+    }
+  ],
+  "type": "community_agritechevolved:crop",
+  "seed": "croptopia:pineapple_seed",
+  "soils": [
+    "#community_agritechevolved:farmland_soils"
+  ],
+  "drops": [
+    {
+      "item": "croptopia:pineapple",
+      "min": 2,
+      "max": 4,
+      "chance": 1.0
+    },
+    {
+      "item": "croptopia:pineapple_seed",
+      "min": 1,
+      "max": 1,
+      "chance": 0.2
+    }
+  ]
+}

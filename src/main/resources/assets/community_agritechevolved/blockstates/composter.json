@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "community_agritechevolved:block/composter"
+    },
+    "powered=true": {
+      "model": "community_agritechevolved:block/composter_powered"
+    }
+  }
+}

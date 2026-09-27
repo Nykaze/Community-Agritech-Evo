@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "P": {
+      "item": "minecraft:birch_planks"
+    }
+  },
+  "pattern": [
+    "PHP",
+    "PPP"
+  ],
+  "result": {
+    "item": "community_agritechevolved:basic_birch_planter"
+  },
+  "show_notification": true
+}

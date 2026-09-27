@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented here.
 
+Versions below `[3.1.0.5+neoforge-mc26.2]` are the history of the original
+Agritech: Evolved by MisterD Modding, kept here for reference. This fork
+restarts its own version line at `0.1b` because it is not a continuation of
+those releases.
+
+## [0.1b+forge-mc1.20.1] - 2026-09-27
+First release of Community AgriTech Evo, the unofficial Forge 1.20.1 backport.
+
+### Added
+- Crop trait system: every planted seed rolls Growth, Yield, Resistance and
+  Mutability traits. Traits are stored in the seed's NBT, shown in the planter
+  GUI and in Jade, and can mutate upward on their own over time.
+- Optional JEI and Jade integrations. Both are now guarded at runtime, so the
+  mod loads and runs with neither installed.
+
+### Fixed
+- Harvest output no longer duplicates items when a planter's drop stack cannot
+  fit the whole harvest.
+- Duplicate recipe error: `DurabilityShapelessRecipeSerializer` hardcoded a
+  single recipe id, so all five tilling recipes collided and all but one were
+  dropped by the recipe manager.
+- Tilling recipes required a `minecraft:barrier` instead of a hoe: the shared
+  ingredient codec expanded tag ingredients through `getItems()`, and an
+  unbound tag serialises to an empty item list during datagen.
+- Generated resources used the pre-1.20.1 folder names (`recipe/`,
+  `loot_table/`, `advancement/`, `assets/.../items/`), which 1.20.1 ignores.
+  Migrated to `recipes/`, `loot_tables/`, `advancements/` and `models/`.
+
+### Changed
+- Mod id is now `community_agritechevolved`, so existing worlds, configs and
+  datapacks from the original are not compatible.
+- Base version reset to `0.1b` to start a separate version line from the
+  original mod.
+
 ## [2.0.15.3+neoforge-mc26.1.2] - 2026-05-24
 ### Added
 - Japanese translation (ja_jp) - thanks hamu6251ren0725-hue!

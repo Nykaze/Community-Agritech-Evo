@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "P": {
+      "item": "minecraft:pink_terracotta"
+    }
+  },
+  "pattern": [
+    "PHP",
+    "PPP"
+  ],
+  "result": {
+    "item": "community_agritechevolved:pink_terracotta_planter"
+  },
+  "show_notification": true
+}

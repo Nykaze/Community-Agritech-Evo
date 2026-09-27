@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:nether_wart",
+      "max": 3,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:nether_wart",
+  "soils": [
+    "#community_agritechevolved:soul_sand_soils"
+  ]
+}

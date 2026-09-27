@@ -5,7 +5,6 @@ import com.misterd.agritechevolved.blockentity.custom.BiomassBurnerBlockEntity;
 import com.misterd.agritechevolved.gui.ATEMenuTypes;
 import com.misterd.agritechevolved.util.RegistryHelper;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -15,8 +14,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class BiomassBurnerMenu extends AbstractContainerMenu {
 
@@ -24,10 +22,10 @@ public class BiomassBurnerMenu extends AbstractContainerMenu {
     private static final int TE_FUEL_SLOT = PLAYER_SLOTS;
     private static final int TE_LAST_SLOT = TE_FUEL_SLOT + 1;
 
-    private static final String BIOMASS = "agritechevolved:biomass";
-    private static final String CRUDE_BIOMASS = "agritechevolved:crude_biomass";
-    private static final String COMPACTED_BIOMASS = "agritechevolved:compacted_biomass";
-    private static final String COMPACTED_BIOMASS_BLOCK = "agritechevolved:compacted_biomass_block";
+    private static final String BIOMASS = "community_agritechevolved:biomass";
+    private static final String CRUDE_BIOMASS = "community_agritechevolved:crude_biomass";
+    private static final String COMPACTED_BIOMASS = "community_agritechevolved:compacted_biomass";
+    private static final String COMPACTED_BIOMASS_BLOCK = "community_agritechevolved:compacted_biomass_block";
 
     public final BiomassBurnerBlockEntity blockEntity;
     private final Level level;
@@ -47,7 +45,12 @@ public class BiomassBurnerMenu extends AbstractContainerMenu {
 
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
-        addSlot(new BiomassSlot(this.blockEntity, 0, 80, 32));
+        addSlot(new SlotItemHandler(this.blockEntity.inventory, 0, 80, 32) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return isFuel(stack);
+            }
+        });
         addDataSlots();
     }
 
@@ -113,7 +116,7 @@ public class BiomassBurnerMenu extends AbstractContainerMenu {
 
         if (index < PLAYER_SLOTS) {
             if (!isFuel(stack)) return ItemStack.EMPTY;
-            if (!insertIntoBlockEntity(stack, 0, 1)) return ItemStack.EMPTY;
+            if (!moveItemStackTo(stack, TE_FUEL_SLOT, TE_LAST_SLOT, false)) return ItemStack.EMPTY;
         } else {
             if (index >= TE_LAST_SLOT) return ItemStack.EMPTY;
             if (!moveItemStackTo(stack, 0, PLAYER_SLOTS, false)) return ItemStack.EMPTY;
@@ -124,39 +127,6 @@ public class BiomassBurnerMenu extends AbstractContainerMenu {
 
         source.onTake(player, stack);
         return copy;
-    }
-
-    private boolean insertIntoBlockEntity(ItemStack stack, int startSlot, int endSlot) {
-        if (stack.isEmpty()) return false;
-        int inserted = 0;
-
-        for (int i = startSlot; i < endSlot && !stack.isEmpty(); i++) {
-            ItemStack existing = blockEntity.getStack(i);
-            if (existing.isEmpty() || !ItemStack.isSameItemSameComponents(existing, stack)) continue;
-            int space = stack.getMaxStackSize() - existing.getCount();
-            if (space <= 0) continue;
-            int toInsert = Math.min(space, stack.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int actual = blockEntity.inventory.insert(i, ItemResource.of(stack), toInsert, tx);
-                tx.commit();
-                stack.shrink(actual);
-                inserted += actual;
-            }
-        }
-
-        for (int i = startSlot; i < endSlot && !stack.isEmpty(); i++) {
-            if (!blockEntity.getStack(i).isEmpty()) continue;
-            if (!blockEntity.inventory.isValid(i, ItemResource.of(stack))) continue;
-            int toInsert = Math.min(stack.getMaxStackSize(), stack.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int actual = blockEntity.inventory.insert(i, ItemResource.of(stack), toInsert, tx);
-                tx.commit();
-                stack.shrink(actual);
-                inserted += actual;
-            }
-        }
-
-        return inserted > 0;
     }
 
     @Override
@@ -180,45 +150,5 @@ public class BiomassBurnerMenu extends AbstractContainerMenu {
         String id = RegistryHelper.getItemId(stack);
         return id.equals(BIOMASS) || id.equals(CRUDE_BIOMASS)
                 || id.equals(COMPACTED_BIOMASS) || id.equals(COMPACTED_BIOMASS_BLOCK);
-    }
-
-    private static class BiomassSlot extends Slot {
-        private final BiomassBurnerBlockEntity be;
-        private final int index;
-
-        BiomassSlot(BiomassBurnerBlockEntity be, int index, int x, int y) {
-            super(new SimpleContainer(be.inventory.size()), index, x, y);
-            this.be = be;
-            this.index = index;
-        }
-
-        @Override public ItemStack getItem() { return be.getStack(index); }
-
-        @Override
-        public void set(ItemStack stack) {
-            try (Transaction tx = Transaction.openRoot()) {
-                ItemStack existing = be.getStack(index);
-                if (!existing.isEmpty())
-                    be.inventory.extract(index, ItemResource.of(existing), existing.getCount(), tx);
-                if (!stack.isEmpty())
-                    be.inventory.insert(index, ItemResource.of(stack), stack.getCount(), tx);
-                tx.commit();
-            }
-            setChanged();
-        }
-
-        @Override public boolean mayPlace(ItemStack stack) { return isFuel(stack); }
-
-        @Override
-        public ItemStack remove(int amount) {
-            ItemStack existing = getItem();
-            if (existing.isEmpty()) return ItemStack.EMPTY;
-            int toExtract = Math.min(amount, existing.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int extracted = be.inventory.extract(index, ItemResource.of(existing), toExtract, tx);
-                tx.commit();
-                return existing.copyWithCount(extracted);
-            }
-        }
     }
 }

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": {
+      "item": "minecraft:hopper"
+    },
+    "P": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    "PHP",
+    "PPP"
+  ],
+  "result": {
+    "item": "community_agritechevolved:basic_planter"
+  },
+  "show_notification": true
+}

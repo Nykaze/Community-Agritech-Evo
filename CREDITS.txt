@@ -1,0 +1,36 @@
+Community AgriTech Evo
+=======================
+
+Unofficial Forge 1.20.1 backport of Agritech: Evolved.
+
+Original mod
+------------
+AgriTech: Evolved (ATE) was created by MisterD Modding and is the original
+work behind this project. All original design, code, assets and data belong
+to them, and are used here under the MIT License (see LICENSE.txt).
+
+This project is not an official release of Agritech: Evolved. It is not
+endorsed by or affiliated with the original author beyond the original work
+being reused under licence.
+
+Backport
+--------
+The port to Minecraft 1.20.1 / Forge was done by Nykaze, including:
+
+  - Porting the mod to Minecraft 1.20.1 and Forge 47.x.
+  - Fixing the pre-1.20.1 resource layout (recipe/, loot_table/, advancement/
+    and assets/items/ were migrated to the 1.20.1 folder names).
+  - Fixing duplicate recipe IDs caused by a hardcoded id in
+    DurabilityShapelessRecipeSerializer.
+  - Fixing a lossy ingredient encoder that dropped tag identity, which caused
+    tilling recipes to require a barrier instead of a hoe.
+  - Adding the crop trait system (growth, yield, resistance, mutability).
+  - Fixing harvest output stacking in the basic and advanced planters.
+  - Making the JEI and Jade integrations optional at runtime.
+
+Licensing note
+--------------
+The crop trait system is an independent implementation written for this
+backport. Productive Farming (JDKDigital) is licensed under the All Rights
+Reserved license and was used as behavioural reference only; no code, assets
+or text were copied from it.

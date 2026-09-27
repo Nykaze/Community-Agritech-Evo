@@ -8,7 +8,6 @@ import com.misterd.agritechevolved.item.ATEItems;
 import com.misterd.agritechevolved.util.RegistryHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -24,21 +23,21 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
-import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 
-public class ComposterBlockEntity extends BlockEntity implements MenuProvider {
+/**
+ * Forge 1.20.1 port. See {@link AdvancedPlanterBlockEntity} for the rationale behind the
+ * substitution of the NeoForge transfer API with {@link ItemStackHandler} /
+ * {@link IItemHandler} and a directly implemented {@link IEnergyStorage}.
+ */
+public class ComposterBlockEntity extends BlockEntity implements MenuProvider, IEnergyStorage {
 
     private static final int INPUT_SLOTS_START = 0;
     private static final int INPUT_SLOTS_COUNT = 12;
@@ -47,39 +46,43 @@ public class ComposterBlockEntity extends BlockEntity implements MenuProvider {
     private static final int MODULE_SLOT = 15;
     private static final int TOTAL_SLOTS = 16;
 
-    private static final String SM_MK1 = "agritechevolved:sm_mk1";
-    private static final String SM_MK2 = "agritechevolved:sm_mk2";
-    private static final String SM_MK3 = "agritechevolved:sm_mk3";
+    private static final String SM_MK1 = "community_agritechevolved:sm_mk1";
+    private static final String SM_MK2 = "community_agritechevolved:sm_mk2";
+    private static final String SM_MK3 = "community_agritechevolved:sm_mk3";
 
     private static final float COMPOST_TARGET = 7.0f;
 
     private int progress = 0;
     private int energyStored = 0;
 
-    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(TOTAL_SLOTS) {
+    public final ItemStackHandler inventory = new ItemStackHandler(TOTAL_SLOTS) {
         @Override
-        public long getCapacityAsLong(int index, ItemResource resource) {
-            return index == MODULE_SLOT ? 1 : resource.toStack().getMaxStackSize();
+        public int getSlotLimit(int slot) {
+            return slot == MODULE_SLOT ? 1 : super.getSlotLimit(slot);
         }
 
         @Override
-        public boolean isValid(int index, ItemResource resource) {
-            if (resource.isEmpty()) return false;
-            if (index >= INPUT_SLOTS_START && index < INPUT_SLOTS_START + INPUT_SLOTS_COUNT)
-                return isCompostableItem(resource.toStack());
-            if (index >= OUTPUT_SLOTS_START && index < OUTPUT_SLOTS_START + OUTPUT_SLOTS_COUNT)
+        public boolean isItemValid(int slot, ItemStack stack) {
+            if (stack.isEmpty()) return false;
+            if (slot >= INPUT_SLOTS_START && slot < INPUT_SLOTS_START + INPUT_SLOTS_COUNT)
+                return isCompostableItem(stack);
+            if (slot >= OUTPUT_SLOTS_START && slot < OUTPUT_SLOTS_START + OUTPUT_SLOTS_COUNT)
                 return true;
-            return index == MODULE_SLOT && isSpeedModule(resource.toStack());
+            return slot == MODULE_SLOT && isSpeedModule(stack);
         }
 
         @Override
-        protected void onContentsChanged(int index, ItemStack previousContents) {
+        protected void onContentsChanged(int slot) {
             ComposterBlockEntity.this.setChanged();
-            if (level != null && !level.isClientSide()) {
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            Level lvl = ComposterBlockEntity.this.level;
+            if (lvl != null && !lvl.isClientSide()) {
+                lvl.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
         }
     };
+
+    private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> new ComposterHandler(this));
+    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> this);
 
     public ComposterBlockEntity(BlockPos pos, BlockState blockState) {
         super(ATEBlockEntities.COMPOSTER_BE.get(), pos, blockState);
@@ -145,7 +148,7 @@ public class ComposterBlockEntity extends BlockEntity implements MenuProvider {
         for (int i = OUTPUT_SLOTS_START; i < OUTPUT_SLOTS_START + OUTPUT_SLOTS_COUNT; i++) {
             ItemStack output = getStack(i);
             if (output.isEmpty()) return true;
-            if (ItemStack.isSameItemSameComponents(output, biomass) && output.getCount() < output.getMaxStackSize()) return true;
+            if (ItemStack.isSameItemSameTags(output, biomass) && output.getCount() < output.getMaxStackSize()) return true;
         }
         return false;
     }
@@ -159,27 +162,27 @@ public class ComposterBlockEntity extends BlockEntity implements MenuProvider {
             if (chance <= 0f) continue;
             int needed = (int) Math.ceil(remaining / chance);
             int taken = Math.min(needed, stack.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                inventory.extract(i, ItemResource.of(stack), taken, tx);
-                tx.commit();
-            }
+            inventory.extractItem(i, taken, false);
             remaining -= chance * taken;
         }
         addBiomassToOutput();
     }
 
     private void addBiomassToOutput() {
-        ItemResource biomassRes = ItemResource.of(new ItemStack(ATEItems.BIOMASS.get()));
+        ItemStack biomass = new ItemStack(ATEItems.BIOMASS.get());
         for (int i = OUTPUT_SLOTS_START; i < OUTPUT_SLOTS_START + OUTPUT_SLOTS_COUNT; i++) {
-            try (Transaction tx = Transaction.openRoot()) {
-                int inserted = inventory.insert(i, biomassRes, 1, tx);
-                if (inserted > 0) { tx.commit(); return; }
-            }
+            ItemStack leftover = inventory.insertItem(i, biomass.copy(), false);
+            if (leftover.getCount() < biomass.getCount()) return;
         }
     }
 
-    private float getCompostChance(ItemStack stack) {
-        return net.minecraft.world.level.block.ComposterBlock.getValue(stack);
+    /**
+     * 1.20.1 has no {@code ComposterBlock.getValue(ItemStack)}; the compost chance table is the
+     * {@link net.minecraft.world.level.block.ComposterBlock#COMPOSTABLES} map keyed by item.
+     */
+    private static float getCompostChance(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return 0f;
+        return net.minecraft.world.level.block.ComposterBlock.COMPOSTABLES.getFloat(stack.getItem());
     }
 
     public boolean isCompostableItem(ItemStack stack) {
@@ -215,108 +218,134 @@ public class ComposterBlockEntity extends BlockEntity implements MenuProvider {
         };
     }
 
-    public ResourceHandler<ItemResource> getItemHandler(@Nullable Direction side) {
-        return new ResourceHandler<>() {
-            @Override
-            public int size() { return inventory.size(); }
-
-            @Override
-            public ItemResource getResource(int index) { return inventory.getResource(index); }
-
-            @Override
-            public long getAmountAsLong(int index) { return inventory.getAmountAsLong(index); }
-
-            @Override
-            public long getCapacityAsLong(int index, ItemResource resource) {
-                return inventory.getCapacityAsLong(index, resource);
-            }
-
-            @Override
-            public boolean isValid(int index, ItemResource resource) {
-                return inventory.isValid(index, resource);
-            }
-
-            @Override
-            public int insert(int index, ItemResource resource, int amount, TransactionContext tx) {
-                boolean isInput = index >= INPUT_SLOTS_START && index < INPUT_SLOTS_START + INPUT_SLOTS_COUNT;
-                boolean isModule = index == MODULE_SLOT;
-                return (isInput || isModule) ? inventory.insert(index, resource, amount, tx) : 0;
-            }
-
-            @Override
-            public int extract(int index, ItemResource resource, int amount, TransactionContext tx) {
-                boolean isOutput = index >= OUTPUT_SLOTS_START && index < OUTPUT_SLOTS_START + OUTPUT_SLOTS_COUNT;
-                return isOutput ? inventory.extract(index, resource, amount, tx) : 0;
-            }
-        };
+    public IItemHandler getItemHandler() {
+        return itemHandler.resolve().orElse(null);
     }
 
-    public EnergyHandler getEnergyHandler(@Nullable Direction side) {
-        return new BEEnergyHandler(this);
-    }
-
-    private static class BEEnergyHandler extends SnapshotJournal<Integer> implements EnergyHandler {
+    /**
+     * Insert is limited to input and module slots, extraction to the output slots.
+     */
+    private static class ComposterHandler implements IItemHandler {
         private final ComposterBlockEntity be;
 
-        BEEnergyHandler(ComposterBlockEntity be) { this.be = be; }
-
-        @Override
-        protected Integer createSnapshot() { return be.energyStored; }
-
-        @Override
-        protected void revertToSnapshot(Integer snapshot) { be.energyStored = snapshot; }
-
-        @Override
-        protected void onRootCommit(Integer originalState) { be.setChanged(); }
-
-        @Override
-        public long getAmountAsLong() { return be.energyStored; }
-
-        @Override
-        public long getCapacityAsLong() { return Config.getComposterEnergyBuffer(); }
-
-        @Override
-        public int insert(int amount, TransactionContext tx) {
-            int received = Math.min(amount, Config.getComposterEnergyBuffer() - be.energyStored);
-            if (received <= 0) return 0;
-            updateSnapshots(tx);
-            be.energyStored += received;
-            return received;
+        ComposterHandler(ComposterBlockEntity be) {
+            this.be = be;
         }
 
         @Override
-        public int extract(int amount, TransactionContext tx) { return 0; }
+        public int getSlots() {
+            return be.inventory.getSlots();
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            return be.inventory.getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            boolean isInput = slot >= INPUT_SLOTS_START && slot < INPUT_SLOTS_START + INPUT_SLOTS_COUNT;
+            boolean isModule = slot == MODULE_SLOT;
+            if (!isInput && !isModule) return stack;
+            return be.inventory.insertItem(slot, stack, simulate);
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            boolean isOutput = slot >= OUTPUT_SLOTS_START && slot < OUTPUT_SLOTS_START + OUTPUT_SLOTS_COUNT;
+            if (!isOutput) return ItemStack.EMPTY;
+            return be.inventory.extractItem(slot, amount, simulate);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return be.inventory.getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return be.inventory.isItemValid(slot, stack);
+        }
     }
 
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ATEBlockEntities.COMPOSTER_BE.get(),
-                (be, dir) -> be instanceof ComposterBlockEntity c ? c.getItemHandler(dir) : null);
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ATEBlockEntities.COMPOSTER_BE.get(),
-                (be, dir) -> be instanceof ComposterBlockEntity c ? c.getEnergyHandler(dir) : null);
-    }
+    // ------------------------------------------------------------------ energy
 
-    public ItemStack getStack(int slot) {
-        ItemResource res = inventory.getResource(slot);
-        if (res.isEmpty()) return ItemStack.EMPTY;
-        return res.toStack(inventory.getAmountAsInt(slot));
+    @Override
+    public int getEnergyStored() {
+        return energyStored;
     }
 
     @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    public int getMaxEnergyStored() {
+        return Config.getComposterEnergyBuffer();
+    }
+
+    @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        int received = Math.min(maxReceive, getMaxEnergyStored() - energyStored);
+        if (received <= 0) return 0;
+        if (!simulate) {
+            energyStored += received;
+            setChanged();
+        }
+        return received;
+    }
+
+    @Override
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        return 0;
+    }
+
+    @Override
+    public boolean canExtract() {
+        return false;
+    }
+
+    @Override
+    public boolean canReceive() {
+        return true;
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast();
+        if (cap == ForgeCapabilities.ITEM_HANDLER) return itemHandler.cast();
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        itemHandler.invalidate();
+        energyCapability.invalidate();
+    }
+
+    // ------------------------------------------------------------------ sync
+
+    public ItemStack getStack(int slot) {
+        return inventory.getStackInSlot(slot);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
         drops();
     }
 
     public void drops() {
-        SimpleContainer inv = new SimpleContainer(inventory.size());
-        for (int i = 0; i < inventory.size(); i++) {
+        SimpleContainer inv = new SimpleContainer(inventory.getSlots());
+        for (int i = 0; i < inventory.getSlots(); i++) {
             inv.setItem(i, getStack(i));
         }
         Containers.dropContents(level, worldPosition, inv);
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            inventory.setStackInSlot(i, ItemStack.EMPTY);
+        }
     }
 
-    public int getEnergyStored() { return energyStored; }
-    public int getMaxEnergyStored() { return Config.getComposterEnergyBuffer(); }
-    public int getProgress() { return progress; }
+    public int getProgress() {
+        return progress;
+    }
 
     public int getMaxProgress() {
         int baseTime = Config.getComposterBaseProcessingTime();
@@ -324,23 +353,25 @@ public class ComposterBlockEntity extends BlockEntity implements MenuProvider {
         return (int) Math.max(1, baseTime / getModuleSpeedModifier());
     }
 
-    public int getCompostValueCollected() { return (int)(getTotalCompostValue() * 100 / COMPOST_TARGET); }
+    public int getCompostValueCollected() { return (int) (getTotalCompostValue() * 100 / COMPOST_TARGET); }
     public int getCompostValueRequired() { return 100; }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        inventory.serialize(output);
-        output.putInt("progress", progress);
-        output.putInt("energyStored", energyStored);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.put("Items", inventory.serializeNBT());
+        tag.putInt("progress", progress);
+        tag.putInt("energyStored", energyStored);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        inventory.deserialize(input);
-        progress = input.getIntOr("progress", 0);
-        energyStored = input.getIntOr("energyStored", 0);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("Items")) {
+            inventory.deserializeNBT(tag.getCompound("Items"));
+        }
+        progress = tag.getInt("progress");
+        energyStored = tag.getInt("energyStored");
     }
 
     @Override
@@ -350,25 +381,13 @@ public class ComposterBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
-    }
-
-    @Override
-    public void setChanged() {
-        super.setChanged();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("gui.agritechevolved.composter");
+        return Component.translatable("gui.community_agritechevolved.composter");
     }
 
     @Override

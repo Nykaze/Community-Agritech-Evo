@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "forbidden_arcanus"
+    }
+  ],
+  "type": "community_agritechevolved:crop",
+  "seed": "forbidden_arcanus:yellow_orchid",
+  "soils": [
+    "#community_agritechevolved:farmland_soils",
+    "#community_agritechevolved:dirt_soils"
+  ],
+  "drops": [
+    {
+      "item": "forbidden_arcanus:yellow_orchid",
+      "min": 1,
+      "max": 1,
+      "chance": 1.0
+    }
+  ]
+}

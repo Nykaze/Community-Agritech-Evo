@@ -2,7 +2,7 @@ package com.misterd.agritechevolved.util;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -25,10 +25,7 @@ public class RegistryHelper {
 
     public static Item getItem(String id) {
         try {
-            Identifier identifier = Identifier.parse(id);
-            return BuiltInRegistries.ITEM.get(identifier)
-                    .map(ref -> ref.value())
-                    .orElse(null);
+            return BuiltInRegistries.ITEM.getOptional(new ResourceLocation(id)).orElse(null);
         } catch (Exception e) {
             LOGGER.error("Invalid item ID in config: {}", id, e);
             return null;
@@ -37,10 +34,7 @@ public class RegistryHelper {
 
     public static Block getBlock(String id) {
         try {
-            Identifier identifier = Identifier.parse(id);
-            return BuiltInRegistries.BLOCK.get(identifier)
-                    .map(ref -> ref.value())
-                    .orElse(null);
+            return BuiltInRegistries.BLOCK.getOptional(new ResourceLocation(id)).orElse(null);
         } catch (Exception e) {
             LOGGER.error("Invalid block ID in config: {}", id, e);
             return null;

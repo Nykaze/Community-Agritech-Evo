@@ -1,33 +1,60 @@
 package com.misterd.agritechevolved.component;
 
-import com.mojang.serialization.Codec;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.eventbus.api.IEventBus;
 
+/**
+ * Minecraft 1.20.1 has no data component system (that arrived in 1.20.5), so the
+ * capacitor's stored energy and tier are persisted in item NBT instead. The public
+ * surface mirrors the original NeoForge data component accessors so call sites stay
+ * unchanged.
+ */
 public class ATEDataComponents {
 
-    public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS =
-            DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, "agritechevolved");
+    public static final String STORED_ENERGY = "stored_energy";
+    public static final String CAPACITOR_TIER = "capacitor_tier";
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> STORED_ENERGY =
-            DATA_COMPONENTS.register("stored_energy", () ->
-                    DataComponentType.<Integer>builder()
-                            .persistent(Codec.INT)
-                            .networkSynchronized(ByteBufCodecs.INT)
-                            .build());
+    public static int getStoredEnergy(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag == null ? 0 : tag.getInt(STORED_ENERGY);
+    }
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CAPACITOR_TIER =
-            DATA_COMPONENTS.register("capacitor_tier", () ->
-                    DataComponentType.<Integer>builder()
-                            .persistent(Codec.INT)
-                            .networkSynchronized(ByteBufCodecs.INT)
-                            .build());
+    public static void setStoredEnergy(ItemStack stack, int energy) {
+        if (energy <= 0) {
+            removeTag(stack, STORED_ENERGY);
+            return;
+        }
+        stack.getOrCreateTag().putInt(STORED_ENERGY, energy);
+    }
+
+    public static int getCapacitorTier(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag == null ? 0 : tag.getInt(CAPACITOR_TIER);
+    }
+
+    public static void setCapacitorTier(ItemStack stack, int tier) {
+        if (tier <= 0) {
+            removeTag(stack, CAPACITOR_TIER);
+            return;
+        }
+        stack.getOrCreateTag().putInt(CAPACITOR_TIER, tier);
+    }
+
+    private static void removeTag(ItemStack stack, String key) {
+        CompoundTag tag = stack.getTag();
+        if (tag != null) {
+            tag.remove(key);
+        }
+    }
+
+    public static void syncNbt(ItemStack from, ItemStack to) {
+        CompoundTag tag = from.getTag();
+        if (tag != null) {
+            to.setTag(tag.copy());
+        }
+    }
 
     public static void register(IEventBus eventBus) {
-        DATA_COMPONENTS.register(eventBus);
     }
 }

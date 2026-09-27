@@ -4,9 +4,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
 
-import java.util.function.Consumer;
+import javax.annotation.Nullable;
+
+import java.util.List;
 
 public class ClocheItem extends Item {
     public ClocheItem(Properties properties) {
@@ -14,9 +16,9 @@ public class ClocheItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-        adder.accept(Component.translatable("item.agritechevolved.cloche.tooltip.line1"));
-        adder.accept(Component.translatable("item.agritechevolved.cloche.tooltip.line2"));
-        adder.accept(Component.translatable("item.agritechevolved.cloche.tooltip.line3"));
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("item.community_agritechevolved.cloche.tooltip.line1"));
+        tooltip.add(Component.translatable("item.community_agritechevolved.cloche.tooltip.line2"));
+        tooltip.add(Component.translatable("item.community_agritechevolved.cloche.tooltip.line3"));
     }
 }

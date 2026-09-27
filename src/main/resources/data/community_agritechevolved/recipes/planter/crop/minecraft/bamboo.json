@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:bamboo",
+      "max": 4,
+      "min": 2
+    }
+  ],
+  "seed": "minecraft:bamboo",
+  "soils": [
+    "#community_agritechevolved:dirt_soils"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "community_agritechevolved:capacitor_tier1"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "RRR",
+    "GCG",
+    "RRR"
+  ],
+  "result": {
+    "item": "community_agritechevolved:capacitor_tier2"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:peony",
+      "max": 1,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:peony",
+  "soils": [
+    "#community_agritechevolved:dirt_soils"
+  ]
+}

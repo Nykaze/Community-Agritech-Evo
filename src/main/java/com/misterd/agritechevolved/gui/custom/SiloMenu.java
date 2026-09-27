@@ -5,7 +5,6 @@ import com.misterd.agritechevolved.blockentity.custom.SiloBlockEntity;
 import com.misterd.agritechevolved.gui.ATEMenuTypes;
 import com.misterd.agritechevolved.util.ATETags;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -15,8 +14,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class SiloMenu extends AbstractContainerMenu {
 
@@ -51,9 +49,29 @@ public class SiloMenu extends AbstractContainerMenu {
         int idx = 0;
         for (int row = 0; row < 7; row++)
             for (int col = 0; col < 9; col++)
-                addSlot(new SiloSlot(blockEntity, idx++, 8 + col * 18, 19 + row * 18));
+                addSlot(new SlotItemHandler(blockEntity.inventory, idx++, 8 + col * 18, 19 + row * 18) {
+                    @Override
+                    public boolean mayPlace(ItemStack stack) {
+                        return false;
+                    }
 
-        addSlot(new SiloSlot(blockEntity, MODULE_SLOT, 176, 19));
+                    @Override
+                    public boolean mayPickup(Player player) {
+                        return true;
+                    }
+                });
+
+        addSlot(new SlotItemHandler(blockEntity.inventory, MODULE_SLOT, 176, 19) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return stack.is(ATETags.Items.ATE_RANGE_MODULES);
+            }
+
+            @Override
+            public int getMaxStackSize() {
+                return 1;
+            }
+        });
     }
 
     private void addDataSlots() {
@@ -98,19 +116,9 @@ public class SiloMenu extends AbstractContainerMenu {
 
     private boolean moveToBlockEntity(ItemStack stack) {
         if (stack.is(ATETags.Items.ATE_RANGE_MODULES) && blockEntity.getStack(MODULE_SLOT).isEmpty()) {
-            insertSingle(stack, MODULE_SLOT);
-            return true;
+            return moveItemStackTo(stack, TE_FIRST_SLOT + MODULE_SLOT, TE_FIRST_SLOT + MODULE_SLOT + 1, false);
         }
         return false;
-    }
-
-    private void insertSingle(ItemStack stack, int slot) {
-        int actual;
-        try (Transaction tx = Transaction.openRoot()) {
-            actual = blockEntity.inventory.insert(slot, ItemResource.of(stack), 1, tx);
-            if (actual > 0) tx.commit();
-        }
-        if (actual > 0) stack.shrink(actual);
     }
 
     @Override
@@ -128,68 +136,5 @@ public class SiloMenu extends AbstractContainerMenu {
     private void addPlayerHotbar(Inventory inv) {
         for (int i = 0; i < 9; i++)
             addSlot(new Slot(inv, i, 8 + i * 18, 218));
-    }
-
-    private static class SiloSlot extends Slot {
-        private final SiloBlockEntity be;
-        private final int index;
-
-        SiloSlot(SiloBlockEntity be, int index, int x, int y) {
-            super(new SimpleContainer(be.inventory.size()), index, x, y);
-            this.be = be;
-            this.index = index;
-            container.setItem(index, be.getStack(index));
-        }
-
-        @Override
-        public ItemStack getItem() {
-            Level lvl = be.getLevel();
-            if (lvl != null && lvl.isClientSide()) return container.getItem(index);
-            return be.getStack(index);
-        }
-
-        @Override
-        public void set(ItemStack stack) {
-            container.setItem(index, stack.copy());
-            Level lvl = be.getLevel();
-            if (lvl == null || lvl.isClientSide()) {
-                setChanged();
-                return;
-            }
-            try (Transaction tx = Transaction.openRoot()) {
-                ItemStack existing = be.getStack(index);
-                if (!existing.isEmpty())
-                    be.inventory.extract(index, ItemResource.of(existing), existing.getCount(), tx);
-                if (!stack.isEmpty()) {
-                    long cap = be.inventory.getCapacityAsLong(index, ItemResource.of(stack));
-                    be.inventory.insert(index, ItemResource.of(stack), (int) Math.min(stack.getCount(), cap), tx);
-                }
-                tx.commit();
-            }
-            setChanged();
-        }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            if (index == MODULE_SLOT) return be.inventory.isValid(index, ItemResource.of(stack));
-            return false;
-        }
-
-        @Override
-        public int getMaxStackSize() {
-            return index == MODULE_SLOT ? 1 : 64;
-        }
-
-        @Override
-        public ItemStack remove(int amount) {
-            ItemStack existing = be.getStack(index);
-            if (existing.isEmpty()) return ItemStack.EMPTY;
-            int toExtract = Math.min(amount, existing.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int extracted = be.inventory.extract(index, ItemResource.of(existing), toExtract, tx);
-                tx.commit();
-                return existing.copyWithCount(extracted);
-            }
-        }
     }
 }

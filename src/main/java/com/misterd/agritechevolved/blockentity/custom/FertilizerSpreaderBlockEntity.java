@@ -9,7 +9,6 @@ import com.misterd.agritechevolved.util.ATETags;
 import com.misterd.agritechevolved.util.RegistryHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -26,95 +25,67 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
-import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class FertilizerSpreaderBlockEntity extends BlockEntity implements MenuProvider {
+/**
+ * Forge 1.20.1 port. The spreader exposes an insert-only item capability and an
+ * insert-only energy buffer, both backed by the block entity itself.
+ */
+public class FertilizerSpreaderBlockEntity extends BlockEntity implements MenuProvider, IEnergyStorage {
 
     private static final int STORAGE_SLOTS = 63;
     private static final int MODULE_SLOT = 63;
     private static final int TOTAL_SLOTS = 64;
 
-    private static final String RM_MK1 = "agritechevolved:rm_mk1";
-    private static final String RM_MK2 = "agritechevolved:rm_mk2";
-    private static final String RM_MK3 = "agritechevolved:rm_mk3";
+    private static final String RM_MK1 = "community_agritechevolved:rm_mk1";
+    private static final String RM_MK2 = "community_agritechevolved:rm_mk2";
+    private static final String RM_MK3 = "community_agritechevolved:rm_mk3";
 
     private static final int MIN_RESCAN_INTERVAL_TICKS = 20;
+
+    private final LazyOptional<IItemHandler> itemHandler = LazyOptional.of(() -> new InsertOnlyHandler(this));
+    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> this);
 
     private int energyStored = 0;
     private int tickCounter = 0;
     private int roundRobinIndex = 0;
     private int scanAge = MIN_RESCAN_INTERVAL_TICKS;
-    private List<BlockPos> cachedTargets = new ArrayList<>();
+    private final List<BlockPos> cachedTargets = new ArrayList<>();
 
-    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(TOTAL_SLOTS) {
+    public final ItemStackHandler inventory = new ItemStackHandler(TOTAL_SLOTS) {
         @Override
-        public long getCapacityAsLong(int index, ItemResource resource) {
-            return index == MODULE_SLOT ? 1 : resource.toStack().getMaxStackSize();
+        public int getSlotLimit(int slot) {
+            if (slot == MODULE_SLOT) return 1;
+            ItemStack current = getStackInSlot(slot);
+            return current.isEmpty() ? 64 : current.getMaxStackSize();
         }
 
         @Override
-        public boolean isValid(int index, ItemResource resource) {
-            if (resource.isEmpty()) return false;
-            if (index == MODULE_SLOT) return isRangeModule(resource.toStack());
-            return index < STORAGE_SLOTS && isFertilizer(resource.toStack());
+        public boolean isItemValid(int slot, ItemStack stack) {
+            if (stack.isEmpty()) return false;
+            if (slot == MODULE_SLOT) return isRangeModule(stack);
+            return slot < STORAGE_SLOTS && isFertilizer(stack);
         }
 
         @Override
-        protected void onContentsChanged(int index, ItemStack previousContents) {
+        protected void onContentsChanged(int slot) {
             FertilizerSpreaderBlockEntity.this.setChanged();
-            if (level != null && !level.isClientSide()) {
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            Level lvl = FertilizerSpreaderBlockEntity.this.level;
+            if (lvl != null && !lvl.isClientSide()) {
+                lvl.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
         }
     };
-
-    private final ResourceHandler<ItemResource> externalItemHandler = new ResourceHandler<>() {
-        @Override
-        public int size() { return inventory.size(); }
-
-        @Override
-        public ItemResource getResource(int index) { return inventory.getResource(index); }
-
-        @Override
-        public long getAmountAsLong(int index) { return inventory.getAmountAsLong(index); }
-
-        @Override
-        public long getCapacityAsLong(int index, ItemResource resource) {
-            return inventory.getCapacityAsLong(index, resource);
-        }
-
-        @Override
-        public boolean isValid(int index, ItemResource resource) {
-            return inventory.isValid(index, resource);
-        }
-
-        @Override
-        public int insert(int index, ItemResource resource, int amount, TransactionContext tx) {
-            return inventory.insert(index, resource, amount, tx);
-        }
-
-        @Override
-        public int extract(int index, ItemResource resource, int amount, TransactionContext tx) {
-            return 0;
-        }
-    };
-
-    private final EnergyHandler energyHandler = new BEEnergyHandler(this);
 
     public FertilizerSpreaderBlockEntity(BlockPos pos, BlockState blockState) {
         super(ATEBlockEntities.FERTILIZER_SPREADER_BE.get(), pos, blockState);
@@ -180,7 +151,13 @@ public class FertilizerSpreaderBlockEntity extends BlockEntity implements MenuPr
                 }
             }
         }
-        cachedTargets = targets;
+        cachedTargets.clear();
+        cachedTargets.addAll(targets);
+        if (!cachedTargets.isEmpty()) {
+            roundRobinIndex %= cachedTargets.size();
+        } else {
+            roundRobinIndex = 0;
+        }
     }
 
     private boolean distributeFertilizer(Level level) {
@@ -199,45 +176,64 @@ public class FertilizerSpreaderBlockEntity extends BlockEntity implements MenuPr
         return changed;
     }
 
+    /**
+     * Moves fertilizer into a planter while keeping both inventories consistent: the amount is
+     * first probed on both sides, then only the accepted amount is really moved.
+     */
     private boolean pushToTarget(Level level, BlockPos targetPos, int amountToPush) {
         BlockEntity target = level.getBlockEntity(targetPos);
-        ResourceHandler<ItemResource> sink = getInsertHandlerFor(target);
+        IItemHandler sink = getInsertHandlerFor(target);
         if (sink == null) return false;
 
         for (int storageSlot = 0; storageSlot < STORAGE_SLOTS; storageSlot++) {
-            ItemResource res = inventory.getResource(storageSlot);
-            if (res.isEmpty()) continue;
-            int available = Math.min(amountToPush, inventory.getAmountAsInt(storageSlot));
+            ItemStack source = inventory.getStackInSlot(storageSlot);
+            if (source.isEmpty()) continue;
+
+            int available = Math.min(amountToPush, source.getCount());
             if (available <= 0) continue;
 
-            for (int targetSlot = 0; targetSlot < sink.size(); targetSlot++) {
-                if (!sink.isValid(targetSlot, res)) continue;
-                try (Transaction tx = Transaction.openRoot()) {
-                    int inserted = sink.insert(targetSlot, res, available, tx);
-                    if (inserted <= 0) continue;
-                    int extracted = inventory.extract(storageSlot, res, inserted, tx);
-                    if (extracted != inserted) continue;
-                    tx.commit();
-                    return true;
-                }
+            for (int targetSlot = 0; targetSlot < sink.getSlots(); targetSlot++) {
+                if (!sink.isItemValid(targetSlot, source)) continue;
+
+                ItemStack probe = source.copyWithCount(available);
+                ItemStack leftover = sink.insertItem(targetSlot, probe, true);
+                int accepted = available - leftover.getCount();
+                if (accepted <= 0) continue;
+
+                ItemStack notRemovable = inventory.extractItem(storageSlot, accepted, true);
+                int removable = accepted - notRemovable.getCount();
+                if (removable <= 0) continue;
+
+                int moved = Math.min(removable, accepted);
+                ItemStack toInsert = source.copyWithCount(moved);
+                ItemStack rejected = sink.insertItem(targetSlot, toInsert, false);
+                int actuallyInserted = moved - rejected.getCount();
+                if (actuallyInserted <= 0) continue;
+
+                inventory.extractItem(storageSlot, actuallyInserted, false);
+                return true;
             }
         }
         return false;
     }
 
     @Nullable
-    private ResourceHandler<ItemResource> getInsertHandlerFor(@Nullable BlockEntity be) {
+    private IItemHandler getInsertHandlerFor(@Nullable BlockEntity be) {
         if (be instanceof AdvancedPlanterBlockEntity planter) return planter.getInsertHandler();
         if (be instanceof PlanterBlockEntity planter) return planter.getInsertHandler();
         return null;
     }
 
-    private static boolean isFertilizer(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem().builtInRegistryHolder().getData(ATEDataMaps.FERTILIZERS) != null;
+    private boolean isFertilizer(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return false;
+        Level lvl = this.level;
+        return lvl != null
+                ? ATEDataMaps.getFertilizer(lvl, stack.getItem()) != null
+                : ATEDataMaps.getFertilizer(stack.getItem()) != null;
     }
 
     private boolean isRangeModule(ItemStack stack) {
-        return !stack.isEmpty() && stack.is(ATETags.Items.ATE_RANGE_MODULES);
+        return stack != null && !stack.isEmpty() && stack.is(ATETags.Items.ATE_RANGE_MODULES);
     }
 
     private int getRangeBonus() {
@@ -255,92 +251,150 @@ public class FertilizerSpreaderBlockEntity extends BlockEntity implements MenuPr
         return Config.getFertilizerSpreaderBaseRange() + getRangeBonus();
     }
 
-    public ResourceHandler<ItemResource> getExternalItemHandler(@Nullable Direction side) {
-        return externalItemHandler;
+    public IItemHandler getItemHandler() {
+        return itemHandler.resolve().orElse(null);
     }
 
-    public EnergyHandler getEnergyHandler(@Nullable Direction side) {
-        return energyHandler;
-    }
-
-    private static class BEEnergyHandler extends SnapshotJournal<Integer> implements EnergyHandler {
+    /**
+     * The spreader only accepts fertilizer, it never gives items back out.
+     */
+    private static class InsertOnlyHandler implements IItemHandler {
         private final FertilizerSpreaderBlockEntity be;
 
-        BEEnergyHandler(FertilizerSpreaderBlockEntity be) { this.be = be; }
-
-        @Override
-        protected Integer createSnapshot() { return be.energyStored; }
-
-        @Override
-        protected void revertToSnapshot(Integer snapshot) { be.energyStored = snapshot; }
-
-        @Override
-        protected void onRootCommit(Integer originalState) { be.setChanged(); }
-
-        @Override
-        public long getAmountAsLong() { return be.energyStored; }
-
-        @Override
-        public long getCapacityAsLong() { return Config.getFertilizerSpreaderEnergyBuffer(); }
-
-        @Override
-        public int insert(int amount, TransactionContext tx) {
-            int received = Math.min(amount, Config.getFertilizerSpreaderEnergyBuffer() - be.energyStored);
-            if (received <= 0) return 0;
-            updateSnapshots(tx);
-            be.energyStored += received;
-            return received;
+        InsertOnlyHandler(FertilizerSpreaderBlockEntity be) {
+            this.be = be;
         }
 
         @Override
-        public int extract(int amount, TransactionContext tx) { return 0; }
+        public int getSlots() {
+            return be.inventory.getSlots();
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            return be.inventory.getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            return be.inventory.insertItem(slot, stack, simulate);
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            return stackOf(slot, amount);
+        }
+
+        private ItemStack stackOf(int slot, int amount) {
+            ItemStack current = be.inventory.getStackInSlot(slot);
+            if (current.isEmpty() || amount <= 0) return ItemStack.EMPTY;
+            return current.copyWithCount(amount);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return be.inventory.getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return be.inventory.isItemValid(slot, stack);
+        }
     }
 
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ATEBlockEntities.FERTILIZER_SPREADER_BE.get(),
-                (be, dir) -> be instanceof FertilizerSpreaderBlockEntity f ? f.getExternalItemHandler(dir) : null);
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ATEBlockEntities.FERTILIZER_SPREADER_BE.get(),
-                (be, dir) -> be instanceof FertilizerSpreaderBlockEntity f ? f.getEnergyHandler(dir) : null);
-    }
+    // ------------------------------------------------------------------ energy
 
-    public ItemStack getStack(int slot) {
-        ItemResource res = inventory.getResource(slot);
-        if (res.isEmpty()) return ItemStack.EMPTY;
-        return res.toStack(inventory.getAmountAsInt(slot));
+    @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        int received = Math.min(maxReceive, Config.getFertilizerSpreaderEnergyBuffer() - energyStored);
+        if (received <= 0) return 0;
+        if (!simulate) {
+            energyStored += received;
+            setChanged();
+        }
+        return received;
     }
 
     @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        return 0;
+    }
+
+    @Override
+    public boolean canExtract() {
+        return false;
+    }
+
+    @Override
+    public boolean canReceive() {
+        return true;
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast();
+        if (cap == ForgeCapabilities.ITEM_HANDLER) return itemHandler.cast();
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        itemHandler.invalidate();
+        energyCapability.invalidate();
+    }
+
+    // ------------------------------------------------------------------ sync
+
+    public ItemStack getStack(int slot) {
+        return inventory.getStackInSlot(slot);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
         drops();
     }
 
     public void drops() {
-        SimpleContainer inv = new SimpleContainer(inventory.size());
-        for (int i = 0; i < inventory.size(); i++) {
+        SimpleContainer inv = new SimpleContainer(inventory.getSlots());
+        for (int i = 0; i < inventory.getSlots(); i++) {
             inv.setItem(i, getStack(i));
         }
         Containers.dropContents(level, worldPosition, inv);
-    }
-
-    public int getEnergyStored() { return energyStored; }
-    public int getMaxEnergyStored() { return Config.getFertilizerSpreaderEnergyBuffer(); }
-
-    @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        inventory.serialize(output);
-        output.putInt("energyStored", energyStored);
-        output.putInt("tickCounter", tickCounter);
-        output.putInt("roundRobinIndex", roundRobinIndex);
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            inventory.setStackInSlot(i, ItemStack.EMPTY);
+        }
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        inventory.deserialize(input);
-        energyStored = input.getIntOr("energyStored", 0);
-        tickCounter = input.getIntOr("tickCounter", 0);
-        roundRobinIndex = input.getIntOr("roundRobinIndex", 0);
+    public int getEnergyStored() {
+        return energyStored;
+    }
+
+    @Override
+    public int getMaxEnergyStored() {
+        return Config.getFertilizerSpreaderEnergyBuffer();
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.put("Items", inventory.serializeNBT());
+        tag.putInt("energyStored", energyStored);
+        tag.putInt("tickCounter", tickCounter);
+        tag.putInt("roundRobinIndex", roundRobinIndex);
+    }
+
+    @Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("Items")) {
+            inventory.deserializeNBT(tag.getCompound("Items"));
+        }
+        energyStored = tag.getInt("energyStored");
+        tickCounter = tag.getInt("tickCounter");
+        roundRobinIndex = tag.getInt("roundRobinIndex");
     }
 
     @Override
@@ -350,25 +404,13 @@ public class FertilizerSpreaderBlockEntity extends BlockEntity implements MenuPr
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
-    }
-
-    @Override
-    public void setChanged() {
-        super.setChanged();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("gui.agritechevolved.fertilizer_spreader");
+        return Component.translatable("gui.community_agritechevolved.fertilizer_spreader");
     }
 
     @Override

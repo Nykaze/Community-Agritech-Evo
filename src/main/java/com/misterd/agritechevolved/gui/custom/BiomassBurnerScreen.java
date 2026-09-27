@@ -1,12 +1,10 @@
 package com.misterd.agritechevolved.gui.custom;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.text.NumberFormat;
@@ -15,8 +13,8 @@ import java.util.Locale;
 
 public class BiomassBurnerScreen extends AbstractContainerScreen<BiomassBurnerMenu> {
 
-    private static final Identifier GUI_TEXTURE =
-            Identifier.fromNamespaceAndPath("agritechevolved", "textures/gui/burner_gui.png");
+    private static final ResourceLocation GUI_TEXTURE =
+            new ResourceLocation("community_agritechevolved", "textures/gui/burner_gui.png");
 
     private static final int GUI_W = 176, GUI_H = 165;
 
@@ -39,7 +37,9 @@ public class BiomassBurnerScreen extends AbstractContainerScreen<BiomassBurnerMe
     private static final int FUEL_SLOT_H = 18;
 
     public BiomassBurnerScreen(BiomassBurnerMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, GUI_W, GUI_H);
+        super(menu, playerInventory, title);
+        this.imageWidth = GUI_W;
+        this.imageHeight = GUI_H;
         this.inventoryLabelY = GUI_H - 94;
     }
 
@@ -49,8 +49,15 @@ public class BiomassBurnerScreen extends AbstractContainerScreen<BiomassBurnerMe
     }
 
     @Override
-    public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_TEXTURE,
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        graphics.blit(GUI_TEXTURE,
                 this.leftPos, this.topPos, 0.0F, 0.0F,
                 this.imageWidth, this.imageHeight, 256, 256);
 
@@ -58,7 +65,7 @@ public class BiomassBurnerScreen extends AbstractContainerScreen<BiomassBurnerMe
         if (maxProgress > 0) {
             int filled = (int) (PROGRESS_BAR_H * (double) progress / maxProgress);
             if (filled > 0) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_TEXTURE,
+                graphics.blit(GUI_TEXTURE,
                         this.leftPos + PROGRESS_BAR_X, this.topPos + PROGRESS_BAR_Y + PROGRESS_BAR_H - filled,
                         (float) PROGRESS_BAR_TEX_X, (float) (PROGRESS_BAR_TEX_Y + PROGRESS_BAR_H - filled),
                         PROGRESS_BAR_W, filled, 256, 256);
@@ -69,26 +76,25 @@ public class BiomassBurnerScreen extends AbstractContainerScreen<BiomassBurnerMe
         if (maxEnergy > 0) {
             int filled = (int) (ENERGY_BAR_H * (double) energy / maxEnergy);
             if (filled > 0) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_TEXTURE,
+                graphics.blit(GUI_TEXTURE,
                         this.leftPos + ENERGY_BAR_X, this.topPos + ENERGY_BAR_Y + ENERGY_BAR_H - filled,
                         (float) ENERGY_BAR_TEX_X, (float) (ENERGY_BAR_H - filled),
                         ENERGY_BAR_W, filled, 256, 256);
             }
         }
 
-        super.extractContents(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
         if (isOver(ENERGY_BAR_X, ENERGY_BAR_Y, ENERGY_BAR_W, ENERGY_BAR_H, mouseX, mouseY)) {
             int energy = menu.getEnergyStored(), maxEnergy = menu.getMaxEnergyStored();
             NumberFormat fmt = NumberFormat.getNumberInstance(Locale.US);
             double pct = maxEnergy > 0 ? (double) energy * 100.0 / maxEnergy : 0.0;
-            graphics.setComponentTooltipForNextFrame(this.font, List.of(
-                    Component.translatable("tooltip.agritechevolved.burner.energy",
+            graphics.renderComponentTooltip(this.font, List.of(
+                    Component.translatable("tooltip.community_agritechevolved.burner.energy",
                             fmt.format(energy), fmt.format(maxEnergy)).withStyle(ChatFormatting.YELLOW),
-                    Component.translatable("tooltip.agritechevolved.burner.energy_percentage",
+                    Component.translatable("tooltip.community_agritechevolved.burner.energy_percentage",
                             String.format("%.1f", pct)).withStyle(ChatFormatting.GRAY)
             ), mouseX, mouseY);
             return;
@@ -101,43 +107,39 @@ public class BiomassBurnerScreen extends AbstractContainerScreen<BiomassBurnerMe
                 double pct = (double) progress * 100.0 / maxProgress;
                 double remainingSecs = (double) (maxProgress - progress) / 20.0;
                 tooltip = List.of(
-                        Component.translatable("tooltip.agritechevolved.burner.burning_progress")
+                        Component.translatable("tooltip.community_agritechevolved.burner.burning_progress")
                                 .withStyle(ChatFormatting.GOLD),
-                        Component.translatable("tooltip.agritechevolved.burner.progress_percentage",
+                        Component.translatable("tooltip.community_agritechevolved.burner.progress_percentage",
                                 String.format("%.1f", pct)).withStyle(ChatFormatting.YELLOW),
-                        Component.translatable("tooltip.agritechevolved.burner.time_remaining",
+                        Component.translatable("tooltip.community_agritechevolved.burner.time_remaining",
                                 String.format("%.1f", remainingSecs)).withStyle(ChatFormatting.GRAY)
                 );
             } else {
                 tooltip = List.of(
-                        Component.translatable("tooltip.agritechevolved.burner.no_fuel").withStyle(ChatFormatting.RED),
-                        Component.translatable("tooltip.agritechevolved.burner.insert_fuel").withStyle(ChatFormatting.GRAY)
+                        Component.translatable("tooltip.community_agritechevolved.burner.no_fuel").withStyle(ChatFormatting.RED),
+                        Component.translatable("tooltip.community_agritechevolved.burner.insert_fuel").withStyle(ChatFormatting.GRAY)
                 );
             }
-            graphics.setComponentTooltipForNextFrame(this.font, tooltip, mouseX, mouseY);
+            graphics.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);
             return;
         }
 
         if (isOver(FUEL_SLOT_X, FUEL_SLOT_Y, FUEL_SLOT_W, FUEL_SLOT_H, mouseX, mouseY)
                 && menu.blockEntity.getStack(0).isEmpty()) {
-            graphics.setComponentTooltipForNextFrame(this.font, List.of(
-                    Component.translatable("tooltip.agritechevolved.burner.fuel_slot").withStyle(ChatFormatting.GOLD),
-                    Component.translatable("tooltip.agritechevolved.burner.accepts").withStyle(ChatFormatting.GRAY),
-                    Component.translatable("tooltip.agritechevolved.burner.accepts_crude_biomass").withStyle(ChatFormatting.GREEN),
-                    Component.translatable("tooltip.agritechevolved.burner.accepts_biomass").withStyle(ChatFormatting.GREEN),
-                    Component.translatable("tooltip.agritechevolved.burner.accepts_compacted_biomass").withStyle(ChatFormatting.GREEN),
-                    Component.translatable("tooltip.agritechevolved.burner.accepts_compacted_biomass_block").withStyle(ChatFormatting.GREEN)
+            graphics.renderComponentTooltip(this.font, List.of(
+                    Component.translatable("tooltip.community_agritechevolved.burner.fuel_slot").withStyle(ChatFormatting.GOLD),
+                    Component.translatable("tooltip.community_agritechevolved.burner.accepts").withStyle(ChatFormatting.GRAY),
+                    Component.translatable("tooltip.community_agritechevolved.burner.accepts_crude_biomass").withStyle(ChatFormatting.GREEN),
+                    Component.translatable("tooltip.community_agritechevolved.burner.accepts_biomass").withStyle(ChatFormatting.GREEN),
+                    Component.translatable("tooltip.community_agritechevolved.burner.accepts_compacted_biomass").withStyle(ChatFormatting.GREEN),
+                    Component.translatable("tooltip.community_agritechevolved.burner.accepts_compacted_biomass_block").withStyle(ChatFormatting.GREEN)
             ), mouseX, mouseY);
             return;
         }
 
-        super.extractTooltip(graphics, mouseX, mouseY);
+        super.renderTooltip(graphics, mouseX, mouseY);
     }
 
-    @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        return super.mouseClicked(event, doubleClick);
-    }
 
     private boolean isOver(int wx, int wy, int ww, int wh, int mx, int my) {
         return mx >= this.leftPos + wx && mx <= this.leftPos + wx + ww

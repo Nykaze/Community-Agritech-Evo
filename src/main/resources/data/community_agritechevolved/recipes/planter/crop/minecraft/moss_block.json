@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:moss_block",
+      "max": 2,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:moss_block",
+  "soils": [
+    "#community_agritechevolved:stone_soils"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "B": {
+      "item": "community_agritechevolved:compacted_biomass"
+    },
+    "F": {
+      "item": "minecraft:farmland"
+    }
+  },
+  "pattern": [
+    "BBB",
+    "BFB",
+    "BBB"
+  ],
+  "result": {
+    "count": 2,
+    "item": "community_agritechevolved:mulch"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,21 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "cobblemon"
+    }
+  ],
+  "type": "community_agritechevolved:crop",
+  "seed": "cobblemon:white_mint_seeds",
+  "soils": [
+    "#community_agritechevolved:farmland_soils"
+  ],
+  "drops": [
+    {
+      "item": "cobblemon:white_mint_leaf",
+      "min": 1,
+      "max": 4,
+      "chance": 1.0
+    }
+  ]
+}

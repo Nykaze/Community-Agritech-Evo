@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:composter"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "I I",
+    "ICI",
+    "IRI"
+  ],
+  "result": {
+    "item": "community_agritechevolved:composter"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "community_agritechevolved:capacitor_tier2"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "E": {
+      "item": "minecraft:emerald"
+    }
+  },
+  "pattern": [
+    "DDD",
+    "ECE",
+    "DDD"
+  ],
+  "result": {
+    "item": "community_agritechevolved:capacitor_tier3"
+  },
+  "show_notification": true
+}

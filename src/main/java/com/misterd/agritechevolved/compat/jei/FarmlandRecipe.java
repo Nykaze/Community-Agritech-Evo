@@ -1,12 +1,11 @@
 package com.misterd.agritechevolved.compat.jei;
 
 import com.misterd.agritechevolved.recipe.DurabilityShapelessRecipe;
-import mezz.jei.api.recipe.category.extensions.IRecipeCategoryExtension;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 
-public class FarmlandRecipe implements IRecipeCategoryExtension {
+public class FarmlandRecipe {
 
     private final Ingredient soilInput;
     private final Ingredient hoeInput;

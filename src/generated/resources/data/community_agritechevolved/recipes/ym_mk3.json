@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "minecraft:enchanted_golden_apple"
+    },
+    "G": {
+      "item": "minecraft:gold_block"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "Y": {
+      "item": "community_agritechevolved:ym_mk2"
+    }
+  },
+  "pattern": [
+    "ENE",
+    "GYG",
+    "ENE"
+  ],
+  "result": {
+    "item": "community_agritechevolved:ym_mk3"
+  },
+  "show_notification": true
+}

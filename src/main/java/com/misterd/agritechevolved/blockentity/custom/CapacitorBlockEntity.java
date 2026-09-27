@@ -9,7 +9,6 @@ import com.misterd.agritechevolved.blockentity.ATEBlockEntities;
 import com.misterd.agritechevolved.gui.custom.CapacitorMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -23,18 +22,20 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
-public class CapacitorBlockEntity extends BlockEntity implements MenuProvider {
+/**
+ * Forge 1.20.1 port. The NeoForge transfer API energy handler is replaced by a directly
+ * implemented {@link IEnergyStorage} exposed through {@link #getCapability}.
+ */
+public class CapacitorBlockEntity extends BlockEntity implements MenuProvider, IEnergyStorage {
+
+    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> this);
 
     private int energyStored = 0;
     private int capacity = 0;
@@ -47,15 +48,11 @@ public class CapacitorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private void initializeCapacitor(BlockState state) {
-        if (state.is(ATEBlocks.CAPACITOR_TIER_1.get())) {
-            tier = 1;
-            transferRate = Config.getCapacitorT1TransferRate();
-            capacity = Config.getCapacitorT1Buffer();
-        } else if (state.is(ATEBlocks.CAPACITOR_TIER_2.get())) {
+        if (state != null && state.is(ATEBlocks.CAPACITOR_TIER_2.get())) {
             tier = 2;
             transferRate = Config.getCapacitorT2TransferRate();
             capacity = Config.getCapacitorT2Buffer();
-        } else if (state.is(ATEBlocks.CAPACITOR_TIER_3.get())) {
+        } else if (state != null && state.is(ATEBlocks.CAPACITOR_TIER_3.get())) {
             tier = 3;
             transferRate = Config.getCapacitorT3TransferRate();
             capacity = Config.getCapacitorT3Buffer();
@@ -78,21 +75,22 @@ public class CapacitorBlockEntity extends BlockEntity implements MenuProvider {
                 if (be.energyStored <= 0) break;
 
                 BlockPos neighborPos = pos.relative(dir);
-                if (level.getBlockEntity(neighborPos) == null) continue;
+                BlockEntity neighborBe = level.getBlockEntity(neighborPos);
+                if (neighborBe == null) continue;
 
-                EnergyHandler neighbor = level.getCapability(Capabilities.Energy.BLOCK, neighborPos, dir.getOpposite());
+                IEnergyStorage neighbor = neighborBe
+                        .getCapability(ForgeCapabilities.ENERGY, dir.getOpposite())
+                        .resolve()
+                        .orElse(null);
                 if (neighbor == null) continue;
 
                 int toTransfer = Math.min(be.transferRate, be.energyStored);
                 if (toTransfer <= 0) continue;
 
-                try (Transaction tx = Transaction.openRoot()) {
-                    int transferred = neighbor.insert(toTransfer, tx);
-                    if (transferred > 0) {
-                        be.energyStored -= transferred;
-                        tx.commit();
-                        changed = true;
-                    }
+                int transferred = neighbor.receiveEnergy(toTransfer, false);
+                if (transferred > 0) {
+                    be.energyStored -= transferred;
+                    changed = true;
                 }
             }
         }
@@ -113,70 +111,56 @@ public class CapacitorBlockEntity extends BlockEntity implements MenuProvider {
         }
     }
 
-    public EnergyHandler getEnergyHandler(@Nullable Direction side) {
-        return new BEEnergyHandler(this);
+    @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        int received = Math.min(Math.min(maxReceive, transferRate), capacity - energyStored);
+        if (received <= 0) return 0;
+        if (!simulate) {
+            energyStored += received;
+            setChanged();
+        }
+        return received;
     }
 
-    private static class BEEnergyHandler extends SnapshotJournal<Integer> implements EnergyHandler {
-        private final CapacitorBlockEntity be;
-
-        BEEnergyHandler(CapacitorBlockEntity be) {
-            this.be = be;
+    @Override
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        int extracted = Math.min(Math.min(maxExtract, transferRate), energyStored);
+        if (extracted <= 0) return 0;
+        if (!simulate) {
+            energyStored -= extracted;
+            setChanged();
         }
-
-        @Override
-        protected Integer createSnapshot() {
-            return be.energyStored;
-        }
-
-        @Override
-        protected void revertToSnapshot(Integer snapshot) {
-            be.energyStored = snapshot;
-        }
-
-        @Override
-        protected void onRootCommit(Integer originalState) {
-            be.setChanged();
-        }
-
-        @Override
-        public long getAmountAsLong() {
-            return be.energyStored;
-        }
-
-        @Override
-        public long getCapacityAsLong() {
-            return be.capacity;
-        }
-
-        @Override
-        public int insert(int amount, TransactionContext tx) {
-            int received = Math.min(Math.min(amount, be.transferRate), be.capacity - be.energyStored);
-            if (received <= 0) return 0;
-            updateSnapshots(tx);
-            be.energyStored += received;
-            return received;
-        }
-
-        @Override
-        public int extract(int amount, TransactionContext tx) {
-            int extracted = Math.min(Math.min(amount, be.transferRate), be.energyStored);
-            if (extracted <= 0) return 0;
-            updateSnapshots(tx);
-            be.energyStored -= extracted;
-            return extracted;
-        }
+        return extracted;
     }
 
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ATEBlockEntities.CAPACITOR_BE.get(),
-                (be, dir) -> be instanceof CapacitorBlockEntity c ? c.getEnergyHandler(dir) : null);
+    @Override
+    public boolean canExtract() {
+        return true;
     }
 
+    @Override
+    public boolean canReceive() {
+        return true;
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast();
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        energyCapability.invalidate();
+    }
+
+    @Override
     public int getEnergyStored() {
         return energyStored;
     }
 
+    @Override
     public int getMaxEnergyStored() {
         return capacity;
     }
@@ -204,20 +188,20 @@ public class CapacitorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.putInt("energyStored", energyStored);
-        output.putInt("tier", tier);
-        output.putInt("transferRate", transferRate);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.putInt("energyStored", energyStored);
+        tag.putInt("tier", tier);
+        tag.putInt("transferRate", transferRate);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        tier = input.getIntOr("tier", 1);
-        transferRate = input.getIntOr("transferRate", 512);
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        tier = tag.contains("tier") && tag.getInt("tier") > 0 ? tag.getInt("tier") : 1;
+        transferRate = tag.contains("transferRate") ? tag.getInt("transferRate") : 512;
         if (getBlockState() != null) initializeCapacitor(getBlockState());
-        energyStored = Math.min(input.getIntOr("energyStored", 0), capacity);
+        energyStored = Math.min(tag.getInt("energyStored"), capacity);
     }
 
     @Override
@@ -227,25 +211,13 @@ public class CapacitorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
-    }
-
-    @Override
-    public void setChanged() {
-        super.setChanged();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("gui.agritechevolved.capacitor_tier" + tier);
+        return Component.translatable("gui.community_agritechevolved.capacitor_tier" + tier);
     }
 
     @Override

@@ -1,0 +1,293 @@
+{
+  "values": {
+    "minecraft:dirt": { "growth_modifier": 0.475 },
+    "minecraft:coarse_dirt": { "growth_modifier": 0.475 },
+    "minecraft:podzol": { "growth_modifier": 0.475 },
+    "minecraft:mycelium": { "growth_modifier": 0.475 },
+    "minecraft:rooted_dirt": { "growth_modifier": 0.475 },
+    "minecraft:moss_block": { "growth_modifier": 0.475 },
+    "minecraft:grass_block": { "growth_modifier": 0.475 },
+    "minecraft:mud": { "growth_modifier": 0.5 },
+    "minecraft:muddy_mangrove_roots": { "growth_modifier": 0.5 },
+    "minecraft:farmland": { "growth_modifier": 0.5 },
+    "minecraft:sand": { "growth_modifier": 0.5 },
+    "minecraft:red_sand": { "growth_modifier": 0.5 },
+    "minecraft:soul_sand": { "growth_modifier": 0.5 },
+    "minecraft:end_stone": { "growth_modifier": 0.5 },
+    "minecraft:jungle_log": { "growth_modifier": 0.5 },
+    "minecraft:jungle_wood": { "growth_modifier": 0.5 },
+    "minecraft:stripped_jungle_log": { "growth_modifier": 0.5 },
+    "minecraft:stripped_jungle_wood": { "growth_modifier": 0.5 },
+    "minecraft:water_bucket": { "growth_modifier": 0.5 },
+    "minecraft:crimson_nylium": { "growth_modifier": 0.6 },
+    "minecraft:warped_nylium": { "growth_modifier": 0.6 },
+    "minecraft:stone": { "growth_modifier": 0.6 },
+    "community_agritechevolved:infused_farmland": { "growth_modifier": 1.5 },
+    "community_agritechevolved:mulch": { "growth_modifier": 1.0 },
+    "farmersdelight:rich_soil": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "farmersdelight" } ],
+      "value": { "growth_modifier": 0.525 }
+    },
+    "farmersdelight:rich_soil_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "farmersdelight" } ],
+      "value": { "growth_modifier": 0.525 }
+    },
+    "farmersdelight:organic_compost": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "farmersdelight" } ],
+      "value": { "growth_modifier": 0.525 }
+    },
+    "mysticalagriculture:inferium_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagriculture" } ],
+      "value": { "growth_modifier": 0.55 }
+    },
+    "mysticalagriculture:prudentium_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagriculture" } ],
+      "value": { "growth_modifier": 0.625 }
+    },
+    "mysticalagriculture:tertium_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagriculture" } ],
+      "value": { "growth_modifier": 0.75 }
+    },
+    "mysticalagriculture:imperium_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagriculture" } ],
+      "value": { "growth_modifier": 1.0 }
+    },
+    "mysticalagriculture:supremium_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagriculture" } ],
+      "value": { "growth_modifier": 1.5 }
+    },
+    "mysticalagradditions:insanium_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagradditions" } ],
+      "value": { "growth_modifier": 1.75 }
+    },
+    "mysticalagradditions:nether_star_crux": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagradditions" } ],
+      "value": { "growth_modifier": 1.75 }
+    },
+    "mysticalagradditions:dragon_egg_crux": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagradditions" } ],
+      "value": { "growth_modifier": 1.75 }
+    },
+    "mysticalagradditions:awakened_draconium_crux": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagradditions" } ],
+      "value": { "growth_modifier": 1.75 }
+    },
+    "mysticalagradditions:neutronium_crux": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagradditions" } ],
+      "value": { "growth_modifier": 1.75 }
+    },
+    "mysticalagradditions:nitro_crystal_crux": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagradditions" } ],
+      "value": { "growth_modifier": 1.75 }
+    },
+    "mysticalagradditions:gaia_spirit_crux": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "mysticalagradditions" } ],
+      "value": { "growth_modifier": 1.75 }
+    },
+    "justdirethings:goosoil_tier1": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "justdirethings" } ],
+      "value": { "growth_modifier": 0.6 }
+    },
+    "justdirethings:goosoil_tier2": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "justdirethings" } ],
+      "value": { "growth_modifier": 0.75 }
+    },
+    "justdirethings:goosoil_tier3": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "justdirethings" } ],
+      "value": { "growth_modifier": 1.0 }
+    },
+    "justdirethings:goosoil_tier4": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "justdirethings" } ],
+      "value": { "growth_modifier": 1.5 }
+    },
+    "aether_ii:aether_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.475 }
+    },
+    "aether_ii:coarse_aether_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.475 }
+    },
+    "aether_ii:mycelial_aether_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.475 }
+    },
+    "aether_ii:aether_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.475 }
+    },
+    "aether_ii:bryalinn_moss_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.475 }
+    },
+    "aether_ii:shayelinn_moss_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.475 }
+    },
+    "aether_ii:ambrelinn_moss_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.475 }
+    },
+    "aether_ii:quicksoil": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "aether_ii:enchanted_aether_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 1.0 }
+    },
+    "aether_ii:aether_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "aether_ii:holystone": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "aether_ii" } ],
+      "value": { "growth_modifier": 0.6 }
+    },
+    "forbidden_arcanus:magical_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "forbidden_arcanus" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+
+    "regions_unexplored:alpha_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:peat_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:peat_coarse_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:peat_podzol": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:peat_mud": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:silt_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:silt_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:silt_coarse_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:silt_podzol": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:silt_mud": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:stone_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:deepslate_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:chalk_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:argillite_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:mossy_stone": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:chalk": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:peat_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:silt_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:viridescent_nylium": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "regions_unexplored:deepslate_viridescent_nylium": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "regions_unexplored" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:peat": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:lush_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:lush_grass_block": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:pale_mud": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:sandy_dirt": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:sandy_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:black_sand": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:white_sand": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:blue_sand": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:purple_sand": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:pink_sand": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:windswept_sand": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:quicksand": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:overgrown_stone": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    },
+    "biomeswevegone:lush_farmland": {
+      "neoforge:conditions": [ { "type": "neoforge:mod_loaded", "modid": "biomeswevegone" } ],
+      "value": { "growth_modifier": 0.5 }
+    }
+  }
+}

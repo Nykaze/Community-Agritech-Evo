@@ -8,7 +8,6 @@ import com.misterd.agritechevolved.util.ATETags;
 import com.misterd.agritechevolved.util.RegistryHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -25,32 +24,32 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
-import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SiloBlockEntity extends BlockEntity implements MenuProvider {
+/**
+ * Forge 1.20.1 port. See {@link AdvancedPlanterBlockEntity} for the rationale behind the
+ * substitution of the NeoForge transfer API with {@link ItemStackHandler} /
+ * {@link IItemHandler} and a directly implemented {@link IEnergyStorage}.
+ */
+public class SiloBlockEntity extends BlockEntity implements MenuProvider, IEnergyStorage {
 
     private static final int STORAGE_SLOTS = 63;
     private static final int MODULE_SLOT = 63;
     private static final int TOTAL_SLOTS = 64;
 
-    private static final String RM_MK1 = "agritechevolved:rm_mk1";
-    private static final String RM_MK2 = "agritechevolved:rm_mk2";
-    private static final String RM_MK3 = "agritechevolved:rm_mk3";
+    private static final String RM_MK1 = "community_agritechevolved:rm_mk1";
+    private static final String RM_MK2 = "community_agritechevolved:rm_mk2";
+    private static final String RM_MK3 = "community_agritechevolved:rm_mk3";
 
     private static final int MIN_RESCAN_INTERVAL_TICKS = 20;
 
@@ -59,59 +58,37 @@ public class SiloBlockEntity extends BlockEntity implements MenuProvider {
     private int scanAge = MIN_RESCAN_INTERVAL_TICKS;
     private List<BlockPos> cachedTargets = new ArrayList<>();
 
-    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(TOTAL_SLOTS) {
+    public final ItemStackHandler inventory = new ItemStackHandler(TOTAL_SLOTS) {
         @Override
-        public long getCapacityAsLong(int index, ItemResource resource) {
-            return index == MODULE_SLOT ? 1 : resource.toStack().getMaxStackSize();
+        public int getSlotLimit(int slot) {
+            return slot == MODULE_SLOT ? 1 : super.getSlotLimit(slot);
         }
 
         @Override
-        public boolean isValid(int index, ItemResource resource) {
-            if (resource.isEmpty()) return false;
-            if (index == MODULE_SLOT) return isRangeModule(resource.toStack());
-            return index < STORAGE_SLOTS;
+        public boolean isItemValid(int slot, ItemStack stack) {
+            if (stack.isEmpty()) return false;
+            if (slot == MODULE_SLOT) return isRangeModule(stack);
+            return slot < STORAGE_SLOTS;
         }
 
         @Override
-        protected void onContentsChanged(int index, ItemStack previousContents) {
+        protected void onContentsChanged(int slot) {
             SiloBlockEntity.this.setChanged();
-            if (level != null && !level.isClientSide()) {
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            Level lvl = SiloBlockEntity.this.level;
+            if (lvl != null && !lvl.isClientSide()) {
+                lvl.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
         }
     };
 
-    private final ResourceHandler<ItemResource> externalItemHandler = new ResourceHandler<>() {
-        @Override
-        public int size() { return inventory.size(); }
+    /**
+     * The silo is output-only to automation: extractors may pull stored items, but nothing
+     * may be pushed into it.
+     */
+    private final LazyOptional<IItemHandler> externalItemHandler =
+            LazyOptional.of(() -> new ExternalExtractHandler(this));
 
-        @Override
-        public ItemResource getResource(int index) { return inventory.getResource(index); }
-
-        @Override
-        public long getAmountAsLong(int index) { return inventory.getAmountAsLong(index); }
-
-        @Override
-        public long getCapacityAsLong(int index, ItemResource resource) {
-            return inventory.getCapacityAsLong(index, resource);
-        }
-
-        @Override
-        public boolean isValid(int index, ItemResource resource) { return false; }
-
-        @Override
-        public int insert(int index, ItemResource resource, int amount, TransactionContext tx) {
-            return 0;
-        }
-
-        @Override
-        public int extract(int index, ItemResource resource, int amount, TransactionContext tx) {
-            if (index >= STORAGE_SLOTS) return 0;
-            return inventory.extract(index, resource, amount, tx);
-        }
-    };
-
-    private final EnergyHandler energyHandler = new BEEnergyHandler(this);
+    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> this);
 
     public SiloBlockEntity(BlockPos pos, BlockState blockState) {
         super(ATEBlockEntities.SILO_BE.get(), pos, blockState);
@@ -179,38 +156,50 @@ public class SiloBlockEntity extends BlockEntity implements MenuProvider {
                 }
             }
         }
-        cachedTargets = targets;
+        cachedTargets.clear();
+        cachedTargets.addAll(targets);
     }
 
+    /**
+     * Pulls from a planter into the silo. Both sides are probed before anything is really moved,
+     * so a failed extraction can never leave ghost items inside the silo.
+     */
     private boolean pullFromTarget(Level level, BlockPos targetPos) {
         BlockEntity target = level.getBlockEntity(targetPos);
-        ResourceHandler<ItemResource> source = getExtractHandlerFor(target);
+        IItemHandler source = getExtractHandlerFor(target);
         if (source == null) return false;
 
         boolean changed = false;
-        for (int slot = 0; slot < source.size(); slot++) {
-            ItemResource res = source.getResource(slot);
-            if (res.isEmpty()) continue;
-            int available = (int) source.getAmountAsLong(slot);
-            if (available <= 0) continue;
+        for (int slot = 0; slot < source.getSlots(); slot++) {
+            ItemStack stack = source.getStackInSlot(slot);
+            if (stack.isEmpty()) continue;
+            int available = stack.getCount();
 
             for (int storageSlot = 0; storageSlot < STORAGE_SLOTS && available > 0; storageSlot++) {
-                try (Transaction tx = Transaction.openRoot()) {
-                    int inserted = inventory.insert(storageSlot, res, available, tx);
-                    if (inserted <= 0) continue;
-                    int extracted = source.extract(slot, res, inserted, tx);
-                    if (extracted != inserted) continue;
-                    tx.commit();
-                    available -= extracted;
-                    changed = true;
-                }
+                ItemStack probe = stack.copyWithCount(available);
+                ItemStack leftover = inventory.insertItem(storageSlot, probe, true);
+                int accepted = available - leftover.getCount();
+                if (accepted <= 0) continue;
+
+                ItemStack notRemovable = source.extractItem(slot, accepted, true);
+                int removable = accepted - notRemovable.getCount();
+                if (removable <= 0) continue;
+
+                ItemStack toStore = stack.copyWithCount(removable);
+                ItemStack rejected = inventory.insertItem(storageSlot, toStore, false);
+                int stored = removable - rejected.getCount();
+                if (stored <= 0) continue;
+
+                source.extractItem(slot, stored, false);
+                available -= stored;
+                changed = true;
             }
         }
         return changed;
     }
 
     @Nullable
-    private ResourceHandler<ItemResource> getExtractHandlerFor(@Nullable BlockEntity be) {
+    private IItemHandler getExtractHandlerFor(@Nullable BlockEntity be) {
         if (be instanceof AdvancedPlanterBlockEntity planter) return planter.getExtractHandler();
         if (be instanceof PlanterBlockEntity planter) return planter.getExtractHandler();
         return null;
@@ -235,90 +224,140 @@ public class SiloBlockEntity extends BlockEntity implements MenuProvider {
         return Config.getSiloBaseRange() + getRangeBonus();
     }
 
-    public ResourceHandler<ItemResource> getExternalItemHandler(@Nullable Direction side) {
-        return externalItemHandler;
+    public IItemHandler getExternalItemHandler() {
+        return externalItemHandler.resolve().orElse(null);
     }
 
-    public EnergyHandler getEnergyHandler(@Nullable Direction side) {
-        return energyHandler;
-    }
+    // ------------------------------------------------------------------ energy
 
-    private static class BEEnergyHandler extends SnapshotJournal<Integer> implements EnergyHandler {
-        private final SiloBlockEntity be;
-
-        BEEnergyHandler(SiloBlockEntity be) { this.be = be; }
-
-        @Override
-        protected Integer createSnapshot() { return be.energyStored; }
-
-        @Override
-        protected void revertToSnapshot(Integer snapshot) { be.energyStored = snapshot; }
-
-        @Override
-        protected void onRootCommit(Integer originalState) { be.setChanged(); }
-
-        @Override
-        public long getAmountAsLong() { return be.energyStored; }
-
-        @Override
-        public long getCapacityAsLong() { return Config.getSiloEnergyBuffer(); }
-
-        @Override
-        public int insert(int amount, TransactionContext tx) {
-            int received = Math.min(amount, Config.getSiloEnergyBuffer() - be.energyStored);
-            if (received <= 0) return 0;
-            updateSnapshots(tx);
-            be.energyStored += received;
-            return received;
-        }
-
-        @Override
-        public int extract(int amount, TransactionContext tx) { return 0; }
-    }
-
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Item.BLOCK, ATEBlockEntities.SILO_BE.get(),
-                (be, dir) -> be instanceof SiloBlockEntity s ? s.getExternalItemHandler(dir) : null);
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ATEBlockEntities.SILO_BE.get(),
-                (be, dir) -> be instanceof SiloBlockEntity s ? s.getEnergyHandler(dir) : null);
-    }
-
-    public ItemStack getStack(int slot) {
-        ItemResource res = inventory.getResource(slot);
-        if (res.isEmpty()) return ItemStack.EMPTY;
-        return res.toStack(inventory.getAmountAsInt(slot));
+    @Override
+    public int getEnergyStored() {
+        return energyStored;
     }
 
     @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    public int getMaxEnergyStored() {
+        return Config.getSiloEnergyBuffer();
+    }
+
+    @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        int received = Math.min(maxReceive, getMaxEnergyStored() - energyStored);
+        if (received <= 0) return 0;
+        if (!simulate) {
+            energyStored += received;
+            setChanged();
+        }
+        return received;
+    }
+
+    @Override
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        return 0;
+    }
+
+    @Override
+    public boolean canExtract() {
+        return false;
+    }
+
+    @Override
+    public boolean canReceive() {
+        return true;
+    }
+
+    private static class ExternalExtractHandler implements IItemHandler {
+        private final SiloBlockEntity be;
+
+        ExternalExtractHandler(SiloBlockEntity be) {
+            this.be = be;
+        }
+
+        @Override
+        public int getSlots() {
+            return be.inventory.getSlots();
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            return be.inventory.getStackInSlot(slot);
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            return stack;
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            if (slot >= STORAGE_SLOTS) return ItemStack.EMPTY;
+            return be.inventory.extractItem(slot, amount, simulate);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return be.inventory.getSlotLimit(slot);
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return false;
+        }
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast();
+        if (cap == ForgeCapabilities.ITEM_HANDLER) return externalItemHandler.cast();
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        energyCapability.invalidate();
+        externalItemHandler.invalidate();
+    }
+
+    // ------------------------------------------------------------------ sync
+
+    public ItemStack getStack(int slot) {
+        return inventory.getStackInSlot(slot);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
         drops();
     }
 
     public void drops() {
-        SimpleContainer inv = new SimpleContainer(inventory.size());
-        for (int i = 0; i < inventory.size(); i++) {
+        SimpleContainer inv = new SimpleContainer(inventory.getSlots());
+        for (int i = 0; i < inventory.getSlots(); i++) {
             inv.setItem(i, getStack(i));
         }
         Containers.dropContents(level, worldPosition, inv);
-    }
-
-    public int getEnergyStored() { return energyStored; }
-    public int getMaxEnergyStored() { return Config.getSiloEnergyBuffer(); }
-
-    @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        inventory.serialize(output);
-        output.putInt("energyStored", energyStored);
-        output.putInt("tickCounter", tickCounter);
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            inventory.setStackInSlot(i, ItemStack.EMPTY);
+        }
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        inventory.deserialize(input);
-        energyStored = input.getIntOr("energyStored", 0);
-        tickCounter = input.getIntOr("tickCounter", 0);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.put("Items", inventory.serializeNBT());
+        tag.putInt("energyStored", energyStored);
+        tag.putInt("tickCounter", tickCounter);
+    }
+
+    @Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.contains("Items")) {
+            inventory.deserializeNBT(tag.getCompound("Items"));
+        }
+        energyStored = tag.getInt("energyStored");
+        tickCounter = tag.getInt("tickCounter");
     }
 
     @Override
@@ -328,25 +367,13 @@ public class SiloBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveWithoutMetadata(registries);
-    }
-
-    @Override
-    public void setChanged() {
-        super.setChanged();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
-    }
-
-    @Override
-    public void onLoad() {
-        super.onLoad();
-        if (level != null && !level.isClientSide()) level.invalidateCapabilities(getBlockPos());
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
     }
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("gui.agritechevolved.silo");
+        return Component.translatable("gui.community_agritechevolved.silo");
     }
 
     @Override

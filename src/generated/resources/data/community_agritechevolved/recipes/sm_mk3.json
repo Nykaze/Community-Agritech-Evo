@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:diamond_block"
+    },
+    "E": {
+      "item": "minecraft:emerald_block"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "S": {
+      "item": "community_agritechevolved:sm_mk2"
+    }
+  },
+  "pattern": [
+    "ENE",
+    "DSD",
+    "ENE"
+  ],
+  "result": {
+    "item": "community_agritechevolved:sm_mk3"
+  },
+  "show_notification": true
+}

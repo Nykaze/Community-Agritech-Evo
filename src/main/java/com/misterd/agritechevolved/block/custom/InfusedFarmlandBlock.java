@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.TriState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -20,9 +19,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
-import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraftforge.common.IPlantable;
 
 import javax.annotation.Nullable;
 
@@ -42,7 +41,7 @@ public class InfusedFarmlandBlock extends Block {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
@@ -63,15 +62,14 @@ public class InfusedFarmlandBlock extends Block {
     }
 
     @Override
-    public TriState canSustainPlant(BlockState state, BlockGetter level, BlockPos soilPosition, Direction facing, BlockState plant) {
-        if (facing != Direction.UP) return TriState.FALSE;
-        Block b = plant.getBlock();
-        if (b instanceof BushBlock || b instanceof CropBlock || b instanceof StemBlock) return TriState.TRUE;
-        return TriState.DEFAULT;
+    public boolean canSustainPlant(BlockState state, BlockGetter level, BlockPos soilPosition, Direction facing, IPlantable plant) {
+        if (facing != Direction.UP) return false;
+        Block b = plant.getPlant(level, soilPosition).getBlock();
+        return b instanceof BushBlock || b instanceof CropBlock || b instanceof StemBlock;
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         int moisture = state.getValue(MOISTURE);
 
         if (!isNearWater(level, pos) && !level.isRainingAt(pos.above())) {
@@ -106,7 +104,7 @@ public class InfusedFarmlandBlock extends Block {
             int age = crop.getValue(SweetBerryBushBlock.AGE);
             if (age < 3) next = crop.setValue(SweetBerryBushBlock.AGE, age + 1);
         } else if (b instanceof BonemealableBlock bonemealable) {
-            if (bonemealable.isValidBonemealTarget(level, cropPos, crop)) {
+            if (bonemealable.isValidBonemealTarget((LevelReader) level, cropPos, crop, true)) {
                 bonemealable.performBonemeal(level, random, cropPos, crop);
             }
         }
@@ -115,17 +113,21 @@ public class InfusedFarmlandBlock extends Block {
     }
 
     @Override
-    public void fallOn(Level level, BlockState state, BlockPos pos, Entity entity, double fallDistance) {
-        entity.causeFallDamage(fallDistance, 1.0F, entity.damageSources().fall());
+    public void fallOn(Level level, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
+        if (fallDistance > 0.0F) {
+            entity.hurt(level.damageSources().fall(), fallDistance);
+        }
     }
 
     @Override
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block changedBlock, @Nullable Orientation orientation, boolean movedByPiston) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block changedBlock, BlockPos changedPos, boolean movedByPiston) {
         if (!state.canSurvive(level, pos)) turnToMulch(null, state, level, pos);
     }
 
     @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType type) { return false; }
+    public boolean isPathfindable(BlockState state, BlockGetter level, BlockPos pos, PathComputationType type) {
+        return false;
+    }
 
     @Override
     public boolean isFertile(BlockState state, BlockGetter level, BlockPos pos) { return true; }

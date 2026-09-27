@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:sweet_berries",
+      "max": 4,
+      "min": 2
+    }
+  ],
+  "seed": "minecraft:sweet_berries",
+  "soils": [
+    "#community_agritechevolved:dirt_soils"
+  ]
+}

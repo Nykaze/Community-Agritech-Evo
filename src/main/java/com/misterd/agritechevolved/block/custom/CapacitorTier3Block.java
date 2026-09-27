@@ -3,16 +3,13 @@ package com.misterd.agritechevolved.block.custom;
 import com.misterd.agritechevolved.blockentity.ATEBlockEntities;
 import com.misterd.agritechevolved.blockentity.custom.CapacitorBlockEntity;
 import com.misterd.agritechevolved.component.ATEDataComponents;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -35,10 +32,10 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import net.minecraftforge.network.NetworkHooks;
 
 public class CapacitorTier3Block extends BaseEntityBlock {
 
-    public static final MapCodec<CapacitorTier3Block> CODEC = simpleCodec(CapacitorTier3Block::new);
     public static final BooleanProperty HAS_ENERGY = BooleanProperty.create("has_energy");
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 
@@ -55,12 +52,7 @@ public class CapacitorTier3Block extends BaseEntityBlock {
     }
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
-
-    @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
 
@@ -76,16 +68,19 @@ public class CapacitorTier3Block extends BaseEntityBlock {
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof CapacitorBlockEntity capacitor) {
-            ((ServerPlayer) player).openMenu(new SimpleMenuProvider(capacitor, Component.translatable("gui.agritechevolved.capacitor")), pos);
+            NetworkHooks.openScreen((ServerPlayer) player, capacitor, pos);
         }
         return InteractionResult.SUCCESS;
     }
 
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        Containers.updateNeighboursAfterDestroy(state, level, pos);
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            level.updateNeighborsAt(pos, this);
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
@@ -95,8 +90,8 @@ public class CapacitorTier3Block extends BaseEntityBlock {
             int energy = capacitor.getEnergyStored();
             if (energy > 0) {
                 ItemStack drop = drops.get(0);
-                drop.set(ATEDataComponents.STORED_ENERGY.get(), energy);
-                drop.set(ATEDataComponents.CAPACITOR_TIER.get(), capacitor.getTier());
+                ATEDataComponents.setStoredEnergy(drop, energy);
+                ATEDataComponents.setCapacitorTier(drop, capacitor.getTier());
             }
         }
         return drops;
@@ -105,8 +100,8 @@ public class CapacitorTier3Block extends BaseEntityBlock {
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        Integer storedEnergy = stack.get(ATEDataComponents.STORED_ENERGY.get());
-        if (storedEnergy != null && storedEnergy > 0 && level.getBlockEntity(pos) instanceof CapacitorBlockEntity capacitor) {
+        int storedEnergy = ATEDataComponents.getStoredEnergy(stack);
+        if (storedEnergy > 0 && level.getBlockEntity(pos) instanceof CapacitorBlockEntity capacitor) {
             capacitor.forceSetEnergy(storedEnergy);
             capacitor.setChanged();
         }

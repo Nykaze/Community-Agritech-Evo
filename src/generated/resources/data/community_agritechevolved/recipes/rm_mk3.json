@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "minecraft:comparator"
+    },
+    "G": {
+      "item": "minecraft:redstone_block"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "Y": {
+      "item": "community_agritechevolved:rm_mk2"
+    }
+  },
+  "pattern": [
+    "ENE",
+    "GYG",
+    "ENE"
+  ],
+  "result": {
+    "item": "community_agritechevolved:rm_mk3"
+  },
+  "show_notification": true
+}

@@ -4,22 +4,25 @@ import com.misterd.agritechevolved.AgritechEvolved;
 import com.misterd.agritechevolved.block.ATEBlocks;
 import com.misterd.agritechevolved.util.ATETags;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.neoforged.neoforge.common.data.BlockTagsProvider;
+import net.minecraftforge.common.data.BlockTagsProvider;
+import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ATEBlockTagProvider extends BlockTagsProvider {
-    public ATEBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
-        super(output, lookupProvider, AgritechEvolved.MODID);
+
+    public ATEBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, ExistingFileHelper existing) {
+        super(output, lookupProvider, AgritechEvolved.MODID, existing);
     }
 
     private static ResourceKey<Block> key(Block block) {
-        return block.builtInRegistryHolder().key();
+        return ResourceKey.create(Registries.BLOCK, ForgeRegistries.BLOCKS.getKey(block));
     }
 
     @Override
@@ -47,9 +50,7 @@ public class ATEBlockTagProvider extends BlockTagsProvider {
                 .add(key(ATEBlocks.CAPACITOR_TIER_3.get()))
                 .add(key(ATEBlocks.SILO.get()))
                 .add(key(ATEBlocks.FERT_SPREADER.get()))
-
                 .add(key(ATEBlocks.COMPACTED_BIOMASS_BLOCK.get()))
-
                 .add(key(ATEBlocks.TERRACOTTA_PLANTER.get()))
                 .add(key(ATEBlocks.BLACK_TERRACOTTA_PLANTER.get()))
                 .add(key(ATEBlocks.BLUE_TERRACOTTA_PLANTER.get()))
@@ -66,7 +67,7 @@ public class ATEBlockTagProvider extends BlockTagsProvider {
                 .add(key(ATEBlocks.PURPLE_TERRACOTTA_PLANTER.get()))
                 .add(key(ATEBlocks.RED_TERRACOTTA_PLANTER.get()))
                 .add(key(ATEBlocks.WHITE_TERRACOTTA_PLANTER.get()))
-                .add(key(ATEBlocks.YELLOW_TERRACOTTA_PLANTER.get()));;
+                .add(key(ATEBlocks.YELLOW_TERRACOTTA_PLANTER.get()));
 
         tag(BlockTags.MINEABLE_WITH_SHOVEL)
                 .add(key(ATEBlocks.INFUSED_FARMLAND.get()))

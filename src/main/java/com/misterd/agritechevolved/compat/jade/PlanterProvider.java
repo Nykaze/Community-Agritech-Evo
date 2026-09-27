@@ -7,8 +7,10 @@ import com.misterd.agritechevolved.blockentity.custom.AdvancedPlanterBlockEntity
 import com.misterd.agritechevolved.blockentity.custom.PlanterBlockEntity;
 import com.misterd.agritechevolved.datamap.ATEDataMaps;
 import com.misterd.agritechevolved.datamap.FertilizerData;
+import com.misterd.agritechevolved.trait.PlantTraits;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,11 +20,11 @@ import snownee.jade.api.IServerDataProvider;
 public enum PlanterProvider implements IServerDataProvider<BlockAccessor> {
     INSTANCE;
 
-    static final Identifier UID =
-            Identifier.fromNamespaceAndPath("agritechevolved", "planter_info");
+    static final ResourceLocation UID =
+            new ResourceLocation("community_agritechevolved", "planter_info");
 
     @Override
-    public Identifier getUid() {
+    public ResourceLocation getUid() {
         return UID;
     }
 
@@ -30,13 +32,13 @@ public enum PlanterProvider implements IServerDataProvider<BlockAccessor> {
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {
         BlockEntity be = accessor.getBlockEntity();
         if (be instanceof AdvancedPlanterBlockEntity advanced) {
-            appendAdvancedPlanterData(data, advanced, accessor.getBlockState());
+            appendAdvancedPlanterData(data, advanced, accessor.getBlockState(), advanced.getLevel());
         } else if (be instanceof PlanterBlockEntity basic) {
-            appendBasicPlanterData(data, basic, accessor.getBlockState());
+            appendBasicPlanterData(data, basic, accessor.getBlockState(), basic.getLevel());
         }
     }
 
-    private void appendBasicPlanterData(CompoundTag data, PlanterBlockEntity planter, BlockState state) {
+    private void appendBasicPlanterData(CompoundTag data, PlanterBlockEntity planter, BlockState state, Level level) {
         data.putBoolean("isAdvanced", false);
 
         ItemStack seedStack = planter.getStack(0);
@@ -48,12 +50,12 @@ public enum PlanterProvider implements IServerDataProvider<BlockAccessor> {
 
         appendCommonCropData(data, seedStack, soilStack,
                 planter.getGrowthStage(), planter.getGrowthProgress(),
-                planter.getSoilGrowthModifier(soilStack), planter.isTree());
-        appendFertilizerData(data, planter.getStack(2));
+                planter.getSoilGrowthModifier(planter.getLevel(), soilStack), planter.isTree());
+        appendFertilizerData(data, level, planter.getStack(2));
         appendClocheData(data, state.getValue(PlanterBlock.CLOCHED));
     }
 
-    private void appendAdvancedPlanterData(CompoundTag data, AdvancedPlanterBlockEntity planter, BlockState state) {
+    private void appendAdvancedPlanterData(CompoundTag data, AdvancedPlanterBlockEntity planter, BlockState state, Level level) {
         data.putBoolean("isAdvanced", true);
 
         ItemStack seedStack = planter.getStack(0);
@@ -65,8 +67,8 @@ public enum PlanterProvider implements IServerDataProvider<BlockAccessor> {
 
         appendCommonCropData(data, seedStack, soilStack,
                 planter.getGrowthStage(), planter.getGrowthProgress(),
-                planter.getSoilGrowthModifier(soilStack), planter.isTree());
-        appendFertilizerData(data, planter.getStack(4));
+                planter.getSoilGrowthModifier(planter.getLevel(), soilStack), planter.isTree());
+        appendFertilizerData(data, level, planter.getStack(4));
         appendClocheData(data, state.getValue(AdvancedPlanterBlock.CLOCHED));
 
         data.putInt("energyStored", planter.getEnergyStored());
@@ -88,14 +90,21 @@ public enum PlanterProvider implements IServerDataProvider<BlockAccessor> {
         data.putFloat("progressPercent", growthProgress * 100.0F);
         data.putString("soilName", soilStack.getDisplayName().getString());
         data.putFloat("growthModifier", soilModifier);
+
+        data.putBoolean("hasTraits", PlantTraits.hasTraits(seedStack));
+        PlantTraits traits = PlantTraits.of(seedStack);
+        data.putInt("traitGrowth", traits.growth().getId());
+        data.putInt("traitYield", traits.yield().getId());
+        data.putInt("traitResistance", traits.resistance().getId());
+        data.putInt("traitMutability", traits.mutability().getId());
     }
 
-    private void appendFertilizerData(CompoundTag data, ItemStack fertStack) {
+    private void appendFertilizerData(CompoundTag data, Level level, ItemStack fertStack) {
         if (fertStack.isEmpty()) {
             data.putBoolean("hasFertilizer", false);
             return;
         }
-        FertilizerData fertData = fertStack.getItem().builtInRegistryHolder().getData(ATEDataMaps.FERTILIZERS);
+        FertilizerData fertData = ATEDataMaps.getFertilizer(level, fertStack.getItem());
         data.putBoolean("hasFertilizer", fertData != null);
         if (fertData != null) {
             data.putString("fertilizerName", fertStack.getDisplayName().getString());

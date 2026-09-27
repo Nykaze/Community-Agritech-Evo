@@ -8,18 +8,14 @@ import com.misterd.agritechevolved.item.ATEItems;
 import com.misterd.agritechevolved.item.custom.ClocheItem;
 import com.misterd.agritechevolved.util.ATETags;
 import com.misterd.agritechevolved.util.RegistryHelper;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -41,17 +37,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.minecraftforge.common.ToolActions;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import net.minecraftforge.network.NetworkHooks;
+import net.minecraft.server.level.ServerPlayer;
 
 public class AdvancedPlanterBlock extends BaseEntityBlock {
 
-    public static final MapCodec<AdvancedPlanterBlock> CODEC = simpleCodec(AdvancedPlanterBlock::new);
     public static final BooleanProperty POWERED = BooleanProperty.create("powered");
     public static final BooleanProperty CLOCHED = BooleanProperty.create("cloched");
     public static final VoxelShape SHAPE = Shapes.or(
@@ -98,17 +93,12 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
-
-    @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
 
@@ -119,12 +109,15 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-        Containers.updateNeighboursAfterDestroy(state, level, pos);
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock())) {
+            level.updateNeighborsAt(pos, this);
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!(level.getBlockEntity(pos) instanceof AdvancedPlanterBlockEntity planter)) {
             return InteractionResult.FAIL;
         }
@@ -157,7 +150,7 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
             return handleModuleInsert(level, pos, state, player, planter, heldItem);
         }
         if (ESSENCE_TO_FARMLAND.containsKey(heldItemId)) {
-            return handleEssenceUpgrade(stack, level, pos, player, planter, heldItemId);
+            return handleEssenceUpgrade(heldItem, level, pos, player, planter, heldItemId);
         }
 
         if (!level.isClientSide()) openGui(player, planter, pos);
@@ -165,7 +158,7 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
     }
 
     private static boolean isFertilizer(ItemStack stack) {
-        return !stack.isEmpty() && stack.getItem().builtInRegistryHolder().getData(ATEDataMaps.FERTILIZERS) != null;
+        return !stack.isEmpty() && ATEDataMaps.getFertilizer(stack.getItem()) != null;
     }
 
     private InteractionResult handleClocheRemoval(BlockState state, Level level, BlockPos pos, Player player) {
@@ -201,15 +194,13 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
 
         ItemStack existingSoil = planter.getStack(1);
         if (!existingSoil.isEmpty() && !planter.isValidPlantSoilCombination(heldItem, existingSoil)) {
-            player.sendOverlayMessage(Component.translatable("message.agritechevolved.invalid_seed_soil_combination").withStyle(ChatFormatting.GOLD));
+            player.displayClientMessage(Component.translatable("message.community_agritechevolved.invalid_seed_soil_combination").withStyle(ChatFormatting.GOLD), true);
             return InteractionResult.SUCCESS;
         }
 
-        try (Transaction tx = Transaction.openRoot()) {
-            planter.inventory.insert(0, ItemResource.of(heldItem), 1, tx);
-            tx.commit();
+        if (insertOne(planter, 0, heldItem) && !player.getAbilities().instabuild) {
+            heldItem.shrink(1);
         }
-        if (!player.getAbilities().instabuild) heldItem.shrink(1);
         level.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F);
         level.sendBlockUpdated(pos, state, state, 2);
         planter.setChanged();
@@ -225,15 +216,13 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
 
         ItemStack existingPlant = planter.getStack(0);
         if (!existingPlant.isEmpty() && !planter.isValidPlantSoilCombination(existingPlant, heldItem)) {
-            player.sendOverlayMessage(Component.translatable("message.agritechevolved.invalid_seed_soil_combination").withStyle(ChatFormatting.GOLD));
+            player.displayClientMessage(Component.translatable("message.community_agritechevolved.invalid_seed_soil_combination").withStyle(ChatFormatting.GOLD), true);
             return InteractionResult.SUCCESS;
         }
 
-        try (Transaction tx = Transaction.openRoot()) {
-            planter.inventory.insert(1, ItemResource.of(heldItem), 1, tx);
-            tx.commit();
+        if (insertOne(planter, 1, heldItem) && !player.getAbilities().instabuild) {
+            heldItem.shrink(1);
         }
-        if (!player.getAbilities().instabuild) heldItem.shrink(1);
         level.playSound(null, pos, SoundEvents.GRAVEL_PLACE, SoundSource.BLOCKS, 1.0F, 0.8F);
         level.sendBlockUpdated(pos, state, state, 2);
         planter.setChanged();
@@ -246,7 +235,7 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
         if (!level.isClientSide()) {
-            var fertData = heldItem.getItem().builtInRegistryHolder().getData(ATEDataMaps.FERTILIZERS);
+            var fertData = ATEDataMaps.getFertilizer(level, heldItem.getItem());
             if (fertData != null) {
                 planter.applyManualFertilizer(fertData.speedMultiplier());
                 if (!player.getAbilities().instabuild) heldItem.shrink(1);
@@ -265,20 +254,13 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
         ItemStack soilStack = planter.getStack(1);
         if (!soilStack.isEmpty() && soilStack.getItem() instanceof BlockItem soilBlockItem) {
             BlockState soilState = soilBlockItem.getBlock().defaultBlockState();
-            BlockState result = soilState.getToolModifiedState(new UseOnContext(level, player, hand, heldItem, hitResult), ItemAbilities.HOE_TILL, false);
-            if (result != null) {
-                try (Transaction tx = Transaction.openRoot()) {
-                    planter.inventory.extract(1, ItemResource.of(soilStack), 1, tx);
-                    planter.inventory.insert(1, ItemResource.of(new ItemStack(result.getBlock())), 1, tx);
-                    tx.commit();
-                }
+            BlockState result = soilState.getToolModifiedState(new UseOnContext(level, player, hand, heldItem, hitResult), ToolActions.HOE_TILL, false);
+            if (result != null && result.getBlock() != soilState.getBlock() && replaceSlot(planter, 1, new ItemStack(result.getBlock()))) {
                 level.playSound(player, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
                 if (!player.getAbilities().instabuild) {
-                    EquipmentSlot slot = hand == InteractionHand.MAIN_HAND
-                            ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
-                    heldItem.hurtAndBreak(1, player, slot);
+                    heldItem.hurtAndBreak(1, player, p -> p.broadcastBreakEvent(hand));
                 }
-                return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+                return InteractionResult.SUCCESS;
             }
         }
         return InteractionResult.PASS;
@@ -289,11 +271,9 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
 
         for (int slot = 2; slot <= 3; slot++) {
             if (planter.getStack(slot).isEmpty()) {
-                try (Transaction tx = Transaction.openRoot()) {
-                    planter.inventory.insert(slot, ItemResource.of(heldItem), 1, tx);
-                    tx.commit();
+                if (insertOne(planter, slot, heldItem) && !player.getAbilities().instabuild) {
+                    heldItem.shrink(1);
                 }
-                if (!player.getAbilities().instabuild) heldItem.shrink(1);
                 level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.2F);
                 level.sendBlockUpdated(pos, state, state, 2);
                 planter.setChanged();
@@ -319,30 +299,36 @@ public class AdvancedPlanterBlock extends BaseEntityBlock {
                     int targetTier = FARMLAND_TIERS.indexOf(farmlandId);
                     if (targetTier <= currentTier) {
                         if (!level.isClientSide()) {
-                            player.sendOverlayMessage(Component.translatable("message.agritechevolved.same_ma_farmland").withStyle(ChatFormatting.GOLD));
+                            player.displayClientMessage(Component.translatable("message.community_agritechevolved.same_ma_farmland").withStyle(ChatFormatting.GOLD), true);
                         }
-                        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
+                        return InteractionResult.SUCCESS;
                     }
 
-                    try (Transaction tx = Transaction.openRoot()) {
-                        planter.inventory.extract(1, ItemResource.of(soilStack), 1, tx);
-                        planter.inventory.insert(1, ItemResource.of(new ItemStack(resultBlock)), 1, tx);
-                        tx.commit();
+                    if (replaceSlot(planter, 1, new ItemStack(resultBlock))) {
+                        if (!player.getAbilities().instabuild) stack.shrink(1);
+                        level.playSound(player, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.0F, 1.0F);
+                        return InteractionResult.SUCCESS;
                     }
-                    if (!player.getAbilities().instabuild) stack.shrink(1);
-                    level.playSound(player, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.0F, 1.0F);
-                    return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
                 }
             }
         }
         return InteractionResult.PASS;
     }
 
+    private static boolean insertOne(AdvancedPlanterBlockEntity planter, int slot, ItemStack source) {
+        return planter.inventory.insertItem(slot, source.copyWithCount(1), false).isEmpty();
+    }
+
+    private static boolean replaceSlot(AdvancedPlanterBlockEntity planter, int slot, ItemStack replacement) {
+        ItemStack current = planter.getStack(slot);
+        if (current.isEmpty()) return false;
+        planter.inventory.setStackInSlot(slot, replacement);
+        planter.setChanged();
+        return true;
+    }
+
     private void openGui(Player player, AdvancedPlanterBlockEntity planter, BlockPos pos) {
-        player.openMenu(new SimpleMenuProvider(
-                (id, inv, p) -> new AdvancedPlanterMenu(id, inv, planter),
-                Component.translatable("gui.agritechevolved.advanced_planter")
-        ), pos);
+        NetworkHooks.openScreen((ServerPlayer) player, planter, pos);
     }
 
     @Override

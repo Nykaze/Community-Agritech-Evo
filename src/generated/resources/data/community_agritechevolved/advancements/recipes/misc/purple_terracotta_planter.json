@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_hopper": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:hopper"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "community_agritechevolved:purple_terracotta_planter"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_hopper",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "community_agritechevolved:purple_terracotta_planter"
+    ]
+  },
+  "sends_telemetry_event": false
+}

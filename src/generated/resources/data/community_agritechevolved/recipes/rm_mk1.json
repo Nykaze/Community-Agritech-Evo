@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:copper_block"
+    },
+    "S": {
+      "item": "minecraft:redstone"
+    },
+    "W": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "pattern": [
+    " W ",
+    "SCS",
+    " W "
+  ],
+  "result": {
+    "item": "community_agritechevolved:rm_mk1"
+  },
+  "show_notification": true
+}

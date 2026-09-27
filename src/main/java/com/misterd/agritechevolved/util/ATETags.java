@@ -1,6 +1,6 @@
 package com.misterd.agritechevolved.util;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -12,8 +12,8 @@ public class ATETags {
         public static final TagKey<Item> BIOMASS = createTag("biomass");
         public static final TagKey<Item> DIRT_LIKE_BLOCK_ITEMS = createTag("dirt_like_block_items");
         public static final TagKey<Item> BASIC_PLANTER_ITEMS = createTag("basic_planter_items");
-        public static final TagKey<Item> ATE_MODULES = createTag("agritechevolved_modules");
-        public static final TagKey<Item> ATE_RANGE_MODULES = createTag("agritechevolved_range_modules");
+  public static final TagKey<Item> ATE_MODULES = createTag("agritechevolved_modules");
+  public static final TagKey<Item> ATE_RANGE_MODULES = createTag("agritechevolved_range_modules");
         public static final TagKey<Item> FARMLAND_SOILS = createTag("farmland_soils");
         public static final TagKey<Item> DIRT_SOILS = createTag("dirt_soils");
         public static final TagKey<Item> TREE_SOILS = createTag("tree_soils");
@@ -28,7 +28,7 @@ public class ATETags {
         public static final TagKey<Item> JUNGLE_SOILS = createTag("jungle_soils");
 
         private static TagKey<Item> createTag(String name) {
-            return ItemTags.create(Identifier.fromNamespaceAndPath("agritechevolved", name));
+            return ItemTags.create(new ResourceLocation("community_agritechevolved", name));
         }
     }
 
@@ -36,7 +36,7 @@ public class ATETags {
         public static final TagKey<Block> BASIC_PLANTERS = createTag("basic_planters");
 
         private static TagKey<Block> createTag(String name) {
-            return BlockTags.create(Identifier.fromNamespaceAndPath("agritechevolved", name));
+            return BlockTags.create(new ResourceLocation("community_agritechevolved", name));
         }
     }
 }

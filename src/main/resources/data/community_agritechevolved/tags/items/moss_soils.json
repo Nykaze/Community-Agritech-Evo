@@ -1,0 +1,8 @@
+{
+  "values": [
+    "minecraft:moss_block",
+    {"id":"aether_ii:bryalinn_moss_block", "required": false},
+    {"id":"aether_ii:shayelinn_moss_block", "required": false},
+    {"id":"aether_ii:ambrelinn_moss_block", "required": false}
+  ]
+}

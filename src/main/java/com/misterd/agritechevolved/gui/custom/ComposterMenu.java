@@ -5,7 +5,6 @@ import com.misterd.agritechevolved.blockentity.custom.ComposterBlockEntity;
 import com.misterd.agritechevolved.gui.ATEMenuTypes;
 import com.misterd.agritechevolved.util.RegistryHelper;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -15,8 +14,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class ComposterMenu extends AbstractContainerMenu {
 
@@ -34,9 +32,9 @@ public class ComposterMenu extends AbstractContainerMenu {
     private static final int TE_MODULE_SLOT = TE_OUTPUT_END;
     private static final int TE_LAST_SLOT = TE_MODULE_SLOT + 1;
 
-    private static final String SM_MK1 = "agritechevolved:sm_mk1";
-    private static final String SM_MK2 = "agritechevolved:sm_mk2";
-    private static final String SM_MK3 = "agritechevolved:sm_mk3";
+    private static final String SM_MK1 = "community_agritechevolved:sm_mk1";
+    private static final String SM_MK2 = "community_agritechevolved:sm_mk2";
+    private static final String SM_MK3 = "community_agritechevolved:sm_mk3";
 
     public final ComposterBlockEntity blockEntity;
     private final Level level;
@@ -63,12 +61,32 @@ public class ComposterMenu extends AbstractContainerMenu {
         int idx = INPUT_SLOTS_START;
         for (int row = 0; row < 3; row++)
             for (int col = 0; col < 4; col++)
-                addSlot(new CompostableSlot(blockEntity, idx++, 8 + col * 18, 19 + row * 18));
+                addSlot(new SlotItemHandler(blockEntity.inventory, idx++, 8 + col * 18, 19 + row * 18) {
+                    @Override
+                    public boolean mayPlace(ItemStack stack) {
+                        return blockEntity.isCompostableItem(stack);
+                    }
+                });
 
         for (int i = 0; i < OUTPUT_SLOTS_COUNT; i++)
-            addSlot(new OutputSlot(blockEntity, OUTPUT_SLOTS_START + i, 98, 19 + i * 18));
+            addSlot(new SlotItemHandler(blockEntity.inventory, OUTPUT_SLOTS_START + i, 98, 19 + i * 18) {
+                @Override
+                public boolean mayPlace(ItemStack stack) {
+                    return false;
+                }
+            });
 
-        addSlot(new ModuleSlot(blockEntity, MODULE_SLOT, 134, 19));
+        addSlot(new SlotItemHandler(blockEntity.inventory, MODULE_SLOT, 134, 19) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return isSpeedModule(stack);
+            }
+
+            @Override
+            public int getMaxStackSize() {
+                return 1;
+            }
+        });
     }
 
     private void addDataSlots() {
@@ -112,48 +130,13 @@ public class ComposterMenu extends AbstractContainerMenu {
     }
 
     private boolean moveToBlockEntity(ItemStack stack) {
-        String id = RegistryHelper.getItemId(stack);
-
-        if (id.equals(SM_MK1) || id.equals(SM_MK2) || id.equals(SM_MK3))
+        if (isSpeedModule(stack))
             return moveItemStackTo(stack, TE_MODULE_SLOT, TE_LAST_SLOT, false);
 
         if (blockEntity.isCompostableItem(stack))
-            return insertIntoBlockEntity(stack, INPUT_SLOTS_START, INPUT_SLOTS_START + INPUT_SLOTS_COUNT);
+            return moveItemStackTo(stack, TE_INPUT_START, TE_INPUT_END, false);
 
         return false;
-    }
-
-    private boolean insertIntoBlockEntity(ItemStack stack, int startSlot, int endSlot) {
-        if (stack.isEmpty()) return false;
-        int inserted = 0;
-
-        for (int i = startSlot; i < endSlot && !stack.isEmpty(); i++) {
-            ItemStack existing = blockEntity.getStack(i);
-            if (existing.isEmpty() || !ItemStack.isSameItemSameComponents(existing, stack)) continue;
-            int space = stack.getMaxStackSize() - existing.getCount();
-            if (space <= 0) continue;
-            int toInsert = Math.min(space, stack.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int actual = blockEntity.inventory.insert(i, ItemResource.of(stack), toInsert, tx);
-                tx.commit();
-                stack.shrink(actual);
-                inserted += actual;
-            }
-        }
-
-        for (int i = startSlot; i < endSlot && !stack.isEmpty(); i++) {
-            if (!blockEntity.getStack(i).isEmpty()) continue;
-            if (!blockEntity.inventory.isValid(i, ItemResource.of(stack))) continue;
-            int toInsert = Math.min(stack.getMaxStackSize(), stack.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int actual = blockEntity.inventory.insert(i, ItemResource.of(stack), toInsert, tx);
-                tx.commit();
-                stack.shrink(actual);
-                inserted += actual;
-            }
-        }
-
-        return inserted > 0;
     }
 
     @Override
@@ -173,79 +156,9 @@ public class ComposterMenu extends AbstractContainerMenu {
             addSlot(new Slot(inv, i, 8 + i * 18, 146));
     }
 
-    private static class ComposterSlot extends Slot {
-        protected final ComposterBlockEntity be;
-        protected final int index;
-
-        ComposterSlot(ComposterBlockEntity be, int index, int x, int y) {
-            super(new SimpleContainer(be.inventory.size()), index, x, y);
-            this.be = be;
-            this.index = index;
-        }
-
-        @Override
-        public ItemStack getItem() {
-            return be.getStack(index);
-        }
-
-        @Override
-        public void set(ItemStack stack) {
-            try (Transaction tx = Transaction.openRoot()) {
-                ItemStack existing = be.getStack(index);
-                if (!existing.isEmpty())
-                    be.inventory.extract(index, ItemResource.of(existing), existing.getCount(), tx);
-                if (!stack.isEmpty())
-                    be.inventory.insert(index, ItemResource.of(stack), stack.getCount(), tx);
-                tx.commit();
-            }
-            setChanged();
-        }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            return be.inventory.isValid(index, ItemResource.of(stack));
-        }
-
-        @Override
-        public ItemStack remove(int amount) {
-            ItemStack existing = getItem();
-            if (existing.isEmpty()) return ItemStack.EMPTY;
-            int toExtract = Math.min(amount, existing.getCount());
-            try (Transaction tx = Transaction.openRoot()) {
-                int extracted = be.inventory.extract(index, ItemResource.of(existing), toExtract, tx);
-                tx.commit();
-                return existing.copyWithCount(extracted);
-            }
-        }
-    }
-
-    private static class CompostableSlot extends ComposterSlot {
-        CompostableSlot(ComposterBlockEntity be, int index, int x, int y) { super(be, index, x, y); }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            return be.isCompostableItem(stack);
-        }
-    }
-
-    private static class OutputSlot extends ComposterSlot {
-        OutputSlot(ComposterBlockEntity be, int index, int x, int y) { super(be, index, x, y); }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) { return false; }
-    }
-
-    private static class ModuleSlot extends ComposterSlot {
-        ModuleSlot(ComposterBlockEntity be, int index, int x, int y) { super(be, index, x, y); }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            if (stack.isEmpty()) return false;
-            String id = RegistryHelper.getItemId(stack);
-            return id.equals(SM_MK1) || id.equals(SM_MK2) || id.equals(SM_MK3);
-        }
-
-        @Override
-        public int getMaxStackSize() { return 1; }
+    private static boolean isSpeedModule(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        String id = RegistryHelper.getItemId(stack);
+        return id.equals(SM_MK1) || id.equals(SM_MK2) || id.equals(SM_MK3);
     }
 }

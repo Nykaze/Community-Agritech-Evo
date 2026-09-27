@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "cloched=false": { "model": "community_agritechevolved:block/basic_planter" },
+    "cloched=true":  { "model": "community_agritechevolved:block/basic_planter" }
+  }
+}

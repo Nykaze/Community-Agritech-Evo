@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_sm_mk1": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "community_agritechevolved:sm_mk1"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "community_agritechevolved:sm_mk2"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_sm_mk1",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "community_agritechevolved:sm_mk2"
+    ]
+  },
+  "sends_telemetry_event": false
+}

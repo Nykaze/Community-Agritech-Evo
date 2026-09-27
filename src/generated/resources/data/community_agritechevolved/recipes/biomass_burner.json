@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "item": "minecraft:furnace"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "III",
+    "IFI",
+    "IRI"
+  ],
+  "result": {
+    "item": "community_agritechevolved:biomass_burner"
+  },
+  "show_notification": true
+}

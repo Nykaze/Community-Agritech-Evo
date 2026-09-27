@@ -1,0 +1,15 @@
+{
+  "type": "community_agritechevolved:crop",
+  "drops": [
+    {
+      "chance": 1.0,
+      "item": "minecraft:seagrass",
+      "max": 2,
+      "min": 1
+    }
+  ],
+  "seed": "minecraft:seagrass",
+  "soils": [
+    "#community_agritechevolved:water_soils"
+  ]
+}
