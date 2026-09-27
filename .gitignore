@@ -38,3 +38,11 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+### Local release tooling ###
+# Per-user upload automation and per-release publication copy.
+# These reference a CurseForge project ID and a local token location, so
+# they stay out of the public source tree.
+tools/
+docs/curseforge/
+Logo/
