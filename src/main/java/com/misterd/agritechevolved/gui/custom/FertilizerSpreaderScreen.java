@@ -70,7 +70,7 @@ public class FertilizerSpreaderScreen extends AbstractContainerScreen<Fertilizer
             float pct = maxEnergy > 0 ? (float) energy / maxEnergy * 100.0F : 0.0F;
             graphics.renderComponentTooltip(this.font, List.of(
                     Component.translatable("tooltip.community_agritechevolved.stored_energy").withStyle(ChatFormatting.YELLOW),
-                    Component.literal(fmt.format(energy) + " / " + fmt.format(maxEnergy) + " RF").withStyle(ChatFormatting.GREEN),
+                    Component.literal(fmt.format(energy) + " / " + fmt.format(maxEnergy) + " FE").withStyle(ChatFormatting.GREEN),
                     Component.literal(String.format("%.1f%%", pct)).withStyle(ChatFormatting.GRAY)
             ), mouseX, mouseY);
             return;

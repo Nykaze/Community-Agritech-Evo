@@ -113,10 +113,10 @@ public class ATEItems {
                 public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
                     tooltip.add(Component.translatable("tooltip.community_agritechevolved.crude_biomass"));
                     addFuelTooltip(tooltip,
-                            Config.getBurnerCrudeBiomassRfValue(),
+                            Config.getBurnerCrudeBiomassFeValue(),
                             Config.getBurnerCrudeBiomassBurnDuration(),
                             50,
-                            "tooltip.community_agritechevolved.crude_biomass.rf_generation",
+                            "tooltip.community_agritechevolved.crude_biomass.fe_generation",
                             "tooltip.community_agritechevolved.crude_fuel.shift_info");
                     tooltip.add(Component.translatable("tooltip.community_agritechevolved.crude_biomass.inefficient").withStyle(ChatFormatting.RED));
                 }
@@ -128,10 +128,10 @@ public class ATEItems {
                 public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
                     tooltip.add(Component.translatable("tooltip.community_agritechevolved.biomass"));
                     addFuelTooltip(tooltip,
-                            Config.getBurnerBiomassRfValue(),
+                            Config.getBurnerBiomassFeValue(),
                             Config.getBurnerBiomassBurnDuration(),
                             100,
-                            "tooltip.community_agritechevolved.biomass.rf_generation",
+                            "tooltip.community_agritechevolved.biomass.fe_generation",
                             "tooltip.community_agritechevolved.fuel.shift_info");
                 }
             });
@@ -142,10 +142,10 @@ public class ATEItems {
                 public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
                     tooltip.add(Component.translatable("tooltip.community_agritechevolved.compacted"));
                     addFuelTooltip(tooltip,
-                            Config.getBurnerCompactedBiomassRfValue(),
+                            Config.getBurnerCompactedBiomassFeValue(),
                             Config.getBurnerCompactedBiomassBurnDuration(),
                             180,
-                            "tooltip.community_agritechevolved.compacted_biomass.rf_generation",
+                            "tooltip.community_agritechevolved.compacted_biomass.fe_generation",
                             "tooltip.community_agritechevolved.fuel.shift_info");
                 }
             });
@@ -183,15 +183,15 @@ public class ATEItems {
         }
     }
 
-    private static void addFuelTooltip(List<Component> tooltip, int baseRF, int burnDuration, int baseDuration,
-                                       String rfKey, String shiftInfoKey) {
+    private static void addFuelTooltip(List<Component> tooltip, int baseFE, int burnDuration, int baseDuration,
+                                       String feKey, String shiftInfoKey) {
         NumberFormat fmt = NumberFormat.getNumberInstance(Locale.US);
-        int actualRF = (int) ((float) baseRF * ((float) burnDuration / baseDuration));
+        int actualFE = (int) ((float) baseFE * ((float) burnDuration / baseDuration));
         if (Screen.hasShiftDown()) {
-            tooltip.add(Component.translatable(rfKey, fmt.format(actualRF)).withStyle(ChatFormatting.GREEN));
+            tooltip.add(Component.translatable(feKey, fmt.format(actualFE)).withStyle(ChatFormatting.GREEN));
             double burnSeconds = burnDuration / 20.0D;
             tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.burn_duration", String.format("%.1f", burnSeconds)).withStyle(ChatFormatting.AQUA));
-            tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.rf_per_second", fmt.format((int) Math.round(actualRF / burnSeconds))).withStyle(ChatFormatting.YELLOW));
+            tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.fe_per_second", fmt.format((int) Math.round(actualFE / burnSeconds))).withStyle(ChatFormatting.YELLOW));
             if (burnDuration != baseDuration) {
                 int pct = (int) Math.round(((double) burnDuration / baseDuration - 1.0D) * 100.0D);
                 if (pct > 0) tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.duration_bonus", pct).withStyle(ChatFormatting.GREEN));

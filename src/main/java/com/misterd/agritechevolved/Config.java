@@ -39,13 +39,13 @@ public class Config {
     public static ForgeConfigSpec.IntValue COMPOSTER_ENERGY_BUFFER;
 
     public static ForgeConfigSpec.IntValue BURNER_ENERGY_BUFFER;
-    public static ForgeConfigSpec.IntValue BURNER_BIOMASS_RF_VALUE;
+    public static ForgeConfigSpec.IntValue BURNER_BIOMASS_FE_VALUE;
     public static ForgeConfigSpec.IntValue BURNER_BIOMASS_BURN_DURATION;
-    public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_RF_VALUE;
+    public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_FE_VALUE;
     public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BURN_DURATION;
-    public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BLOCK_RF_VALUE;
+    public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BLOCK_FE_VALUE;
     public static ForgeConfigSpec.IntValue BURNER_COMPACTED_BIOMASS_BLOCK_BURN_DURATION;
-    public static ForgeConfigSpec.IntValue BURNER_CRUDE_BIOMASS_RF_VALUE;
+    public static ForgeConfigSpec.IntValue BURNER_CRUDE_BIOMASS_FE_VALUE;
     public static ForgeConfigSpec.IntValue BURNER_CRUDE_BIOMASS_BURN_DURATION;
 
     public static ForgeConfigSpec.IntValue CAPACITOR_T1_BUFFER;
@@ -112,10 +112,10 @@ public class Config {
 
     private static void planterConfig() {
         COMMON_BUILDER.comment("Advanced Planter Configuration").push("advanced_planter");
-        PLANTER_BASE_POWER_CONSUMPTION = COMMON_BUILDER.comment("Base power consumption for Advanced Planter (RF/t)").defineInRange("base_power_consumption", 128, 1, 100000);
+        PLANTER_BASE_POWER_CONSUMPTION = COMMON_BUILDER.comment("Base power consumption for Advanced Planter (FE/t)").defineInRange("base_power_consumption", 128, 1, 100000);
         PLANTER_BASE_PROCESSING_TIME = COMMON_BUILDER.comment("Base processing time for basic planters (ticks)").defineInRange("base_processing_time", 1200, 1, 72000);
         ADVANCED_PLANTER_BASE_PROCESSING_TIME = COMMON_BUILDER.comment("Base processing time for the Advanced Planter (ticks)").defineInRange("advanced_base_processing_time", 600, 1, 72000);
-        PLANTER_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Advanced Planter (RF)").defineInRange("energy_buffer", 100000, 1000, 10000000);
+        PLANTER_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Advanced Planter (FE)").defineInRange("energy_buffer", 100000, 1000, 10000000);
         CLOCHE_SPEED_MULTIPLIER = COMMON_BUILDER.comment("Speed multiplier applied when a cloche is attached to a planter").defineInRange("cloche_speed_multiplier", 1.15D, 0.1D, 10.0D);
         CLOCHE_YIELD_MULTIPLIER = COMMON_BUILDER.comment("Yield multiplier applied when a cloche is attached to a planter").defineInRange("cloche_yield_multiplier", 1.10D, 0.1D, 10.0D);
         COMMON_BUILDER.pop();
@@ -123,22 +123,22 @@ public class Config {
 
     private static void composterConfig() {
         COMMON_BUILDER.comment("Composter Configuration").push("composter");
-        COMPOSTER_BASE_POWER_CONSUMPTION = COMMON_BUILDER.comment("Base power consumption for Composter (RF/t)").defineInRange("base_power_consumption", 128, 1, 100000);
+        COMPOSTER_BASE_POWER_CONSUMPTION = COMMON_BUILDER.comment("Base power consumption for Composter (FE/t)").defineInRange("base_power_consumption", 128, 1, 100000);
         COMPOSTER_BASE_PROCESSING_TIME = COMMON_BUILDER.comment("Base processing time for Composter (ticks)").defineInRange("base_processing_time", 600, 1, 72000);
-        COMPOSTER_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Composter (RF)").defineInRange("energy_buffer", 100000, 1000, 10000000);
+        COMPOSTER_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Composter (FE)").defineInRange("energy_buffer", 100000, 1000, 10000000);
         COMMON_BUILDER.pop();
     }
 
     private static void burnerConfig() {
         COMMON_BUILDER.comment("Burner Configuration").push("burner");
-        BURNER_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Burner (RF)").defineInRange("energy_buffer", 100000, 1000, 10000000);
-        BURNER_BIOMASS_RF_VALUE = COMMON_BUILDER.comment("RF generated per biomass item").defineInRange("biomass_rf_value", 2500, 100, 100000);
+        BURNER_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Burner (FE)").defineInRange("energy_buffer", 100000, 1000, 10000000);
+        BURNER_BIOMASS_FE_VALUE = COMMON_BUILDER.comment("FE generated per biomass item").defineInRange("biomass_fe_value", 2500, 100, 100000);
         BURNER_BIOMASS_BURN_DURATION = COMMON_BUILDER.comment("Burn duration for biomass in ticks (20 ticks = 1 second)").defineInRange("biomass_burn_duration", 100, 20, 72000);
-        BURNER_COMPACTED_BIOMASS_RF_VALUE = COMMON_BUILDER.comment("RF generated per compacted biomass item").defineInRange("compacted_biomass_rf_value", 22500, 1000, 1000000);
+        BURNER_COMPACTED_BIOMASS_FE_VALUE = COMMON_BUILDER.comment("FE generated per compacted biomass item").defineInRange("compacted_biomass_fe_value", 22500, 1000, 1000000);
         BURNER_COMPACTED_BIOMASS_BURN_DURATION = COMMON_BUILDER.comment("Burn duration for compacted biomass in ticks (20 ticks = 1 second)").defineInRange("compacted_biomass_burn_duration", 180, 20, 72000);
-        BURNER_COMPACTED_BIOMASS_BLOCK_RF_VALUE = COMMON_BUILDER.comment("RF generated per compacted biomass block").defineInRange("compacted_biomass_block_rf_value", 225000, 1000, 1000000);
+        BURNER_COMPACTED_BIOMASS_BLOCK_FE_VALUE = COMMON_BUILDER.comment("FE generated per compacted biomass block").defineInRange("compacted_biomass_block_fe_value", 225000, 1000, 1000000);
         BURNER_COMPACTED_BIOMASS_BLOCK_BURN_DURATION = COMMON_BUILDER.comment("Burn duration for compacted biomass block in ticks (20 ticks = 1 second)").defineInRange("compacted_biomass_block_burn_duration", 1800, 20, 72000);
-        BURNER_CRUDE_BIOMASS_RF_VALUE = COMMON_BUILDER.comment("RF generated per crude biomass item").defineInRange("crude_biomass_rf_value", 250, 50, 50000);
+        BURNER_CRUDE_BIOMASS_FE_VALUE = COMMON_BUILDER.comment("FE generated per crude biomass item").defineInRange("crude_biomass_fe_value", 250, 50, 50000);
         BURNER_CRUDE_BIOMASS_BURN_DURATION = COMMON_BUILDER.comment("Burn duration for crude biomass in ticks (20 ticks = 1 second)").defineInRange("crude_biomass_burn_duration", 50, 20, 72000);
         COMMON_BUILDER.pop();
     }
@@ -146,16 +146,16 @@ public class Config {
     private static void capacitorConfig() {
         COMMON_BUILDER.comment("Capacitor Configuration").push("capacitors");
         COMMON_BUILDER.comment("Tier 1 Capacitor").push("tier_1");
-        CAPACITOR_T1_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for T1 Capacitor (RF)").defineInRange("buffer_capacity", 500000, 10000, 100000000);
-        CAPACITOR_T1_TRANSFER_RATE = COMMON_BUILDER.comment("Energy transfer rate for T1 Capacitor (RF/t)").defineInRange("transfer_rate", 512, 1, 100000);
+        CAPACITOR_T1_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for T1 Capacitor (FE)").defineInRange("buffer_capacity", 500000, 10000, 100000000);
+        CAPACITOR_T1_TRANSFER_RATE = COMMON_BUILDER.comment("Energy transfer rate for T1 Capacitor (FE/t)").defineInRange("transfer_rate", 512, 1, 100000);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.comment("Tier 2 Capacitor").push("tier_2");
-        CAPACITOR_T2_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for T2 Capacitor (RF)").defineInRange("buffer_capacity", 1000000, 10000, 100000000);
-        CAPACITOR_T2_TRANSFER_RATE = COMMON_BUILDER.comment("Energy transfer rate for T2 Capacitor (RF/t)").defineInRange("transfer_rate", 2048, 1, 100000);
+        CAPACITOR_T2_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for T2 Capacitor (FE)").defineInRange("buffer_capacity", 1000000, 10000, 100000000);
+        CAPACITOR_T2_TRANSFER_RATE = COMMON_BUILDER.comment("Energy transfer rate for T2 Capacitor (FE/t)").defineInRange("transfer_rate", 2048, 1, 100000);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.comment("Tier 3 Capacitor").push("tier_3");
-        CAPACITOR_T3_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for T3 Capacitor (RF)").defineInRange("buffer_capacity", 4000000, 10000, 100000000);
-        CAPACITOR_T3_TRANSFER_RATE = COMMON_BUILDER.comment("Energy transfer rate for T3 Capacitor (RF/t)").defineInRange("transfer_rate", 8192, 1, 100000);
+        CAPACITOR_T3_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for T3 Capacitor (FE)").defineInRange("buffer_capacity", 4000000, 10000, 100000000);
+        CAPACITOR_T3_TRANSFER_RATE = COMMON_BUILDER.comment("Energy transfer rate for T3 Capacitor (FE/t)").defineInRange("transfer_rate", 8192, 1, 100000);
         COMMON_BUILDER.pop();
         COMMON_BUILDER.pop();
     }
@@ -163,8 +163,8 @@ public class Config {
     private static void siloConfig() {
         COMMON_BUILDER.comment("Silo Configuration").push("silo");
         SILO_BASE_RANGE = COMMON_BUILDER.comment("Base range for Silo (blocks)").defineInRange("base_range", 16, 4, 64);
-        SILO_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Silo (RF)").defineInRange("energy_buffer", 100000, 1000, 1000000);
-        SILO_BASE_POWER_CONSUMPTION = COMMON_BUILDER.comment("Base power consumption for Silo (RF/t)").defineInRange("base_power_consumption", 128, 1, 100000);
+        SILO_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Silo (FE)").defineInRange("energy_buffer", 100000, 1000, 1000000);
+        SILO_BASE_POWER_CONSUMPTION = COMMON_BUILDER.comment("Base power consumption for Silo (FE/t)").defineInRange("base_power_consumption", 128, 1, 100000);
         SILO_PULL_INTERVAL = COMMON_BUILDER.comment("How often the Silo pulls from planters in range (ticks)").defineInRange("pull_interval", 60, 2, 6000);
         COMMON_BUILDER.pop();
     }
@@ -172,8 +172,8 @@ public class Config {
     private static void fertilizerSpreaderConfig() {
         COMMON_BUILDER.comment("Fertilizer Spreader Configuration").push("fertilizer_spreader");
         FERTILIZER_SPREADER_BASE_RANGE = COMMON_BUILDER.comment("Base range for Fertilizer Spreader (blocks)").defineInRange("base_range", 16, 4, 64);
-        FERTILIZER_SPREADER_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Fertilizer Spreader (RF)").defineInRange("energy_buffer", 100000, 1000, 1000000);
-        FERTILIZER_SPREADER_BASE_POWER_CONSUMPTION = COMMON_BUILDER.comment("Base power consumption for Fertilizer Spreader (RF/t)").defineInRange("base_power_consumption", 128, 1, 100000);
+        FERTILIZER_SPREADER_ENERGY_BUFFER = COMMON_BUILDER.comment("Energy buffer capacity for Fertilizer Spreader (FE)").defineInRange("energy_buffer", 100000, 1000, 1000000);
+        FERTILIZER_SPREADER_BASE_POWER_CONSUMPTION = COMMON_BUILDER.comment("Base power consumption for Fertilizer Spreader (FE/t)").defineInRange("base_power_consumption", 128, 1, 100000);
         FERTILIZER_SPREADER_PUSH_INTERVAL = COMMON_BUILDER.comment("How often the Fertilizer Spreader pushes to planters in range (ticks)").defineInRange("push_interval", 60, 2, 6000);
         FERTILIZER_SPREADER_PUSH_AMOUNT = COMMON_BUILDER.comment("How many fertilizer items the Fertilizer Spreader pushes per planter per push").defineInRange("push_amount", 8, 1, 64);
         COMMON_BUILDER.pop();
@@ -205,13 +205,13 @@ public class Config {
     public static int getComposterEnergyBuffer() { return COMPOSTER_ENERGY_BUFFER.get(); }
 
     public static int getBurnerEnergyBuffer() { return BURNER_ENERGY_BUFFER.get(); }
-    public static int getBurnerBiomassRfValue() { return BURNER_BIOMASS_RF_VALUE.get(); }
+    public static int getBurnerBiomassFeValue() { return BURNER_BIOMASS_FE_VALUE.get(); }
     public static int getBurnerBiomassBurnDuration() { return BURNER_BIOMASS_BURN_DURATION.get(); }
-    public static int getBurnerCompactedBiomassRfValue() { return BURNER_COMPACTED_BIOMASS_RF_VALUE.get(); }
+    public static int getBurnerCompactedBiomassFeValue() { return BURNER_COMPACTED_BIOMASS_FE_VALUE.get(); }
     public static int getBurnerCompactedBiomassBurnDuration() { return BURNER_COMPACTED_BIOMASS_BURN_DURATION.get(); }
-    public static int getBurnerCompactedBiomassBlockRfValue() { return BURNER_COMPACTED_BIOMASS_BLOCK_RF_VALUE.get(); }
+    public static int getBurnerCompactedBiomassBlockFeValue() { return BURNER_COMPACTED_BIOMASS_BLOCK_FE_VALUE.get(); }
     public static int getBurnerCompactedBiomassBlockBurnDuration() { return BURNER_COMPACTED_BIOMASS_BLOCK_BURN_DURATION.get(); }
-    public static int getBurnerCrudeBiomassRfValue() { return BURNER_CRUDE_BIOMASS_RF_VALUE.get(); }
+    public static int getBurnerCrudeBiomassFeValue() { return BURNER_CRUDE_BIOMASS_FE_VALUE.get(); }
     public static int getBurnerCrudeBiomassBurnDuration() { return BURNER_CRUDE_BIOMASS_BURN_DURATION.get(); }
 
     public static int getCapacitorT1Buffer() { return CAPACITOR_T1_BUFFER.get(); }

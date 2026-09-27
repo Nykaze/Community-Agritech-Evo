@@ -59,7 +59,7 @@ public class CapacitorScreen extends AbstractContainerScreen<CapacitorMenu> {
             }
         }
 
-        Component energyText = Component.literal(NumberFormat.getNumberInstance(Locale.US).format(energy) + " RF");
+        Component energyText = Component.literal(NumberFormat.getNumberInstance(Locale.US).format(energy) + " FE");
         int barCenterX = this.leftPos + BAR_X + BAR_W / 2;
         int barCenterY = this.topPos  + BAR_Y + BAR_H / 2 - this.font.lineHeight;
         graphics.drawString(this.font, energyText,

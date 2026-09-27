@@ -100,7 +100,7 @@ public class AdvancedPlanterScreen extends AbstractContainerScreen<AdvancedPlant
             NumberFormat fmt = NumberFormat.getInstance(Locale.US);
             graphics.renderComponentTooltip(this.font, List.of(
                     Component.translatable("tooltip.community_agritechevolved.stored_energy"),
-                    Component.literal(fmt.format(energy) + " / " + fmt.format(maxEnergy) + " RF")
+                    Component.literal(fmt.format(energy) + " / " + fmt.format(maxEnergy) + " FE")
                             .withStyle(ChatFormatting.YELLOW)
             ), mouseX, mouseY);
             return;

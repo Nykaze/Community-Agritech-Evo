@@ -124,26 +124,26 @@ public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvide
         if (fuel.isEmpty()) return;
 
         String id = RegistryHelper.getItemId(fuel);
-        int baseRF, burnDuration, baseDuration;
+        int baseFE, burnDuration, baseDuration;
 
         switch (id) {
             case BIOMASS -> {
-                baseRF = Config.getBurnerBiomassRfValue();
+                baseFE = Config.getBurnerBiomassFeValue();
                 burnDuration = Config.getBurnerBiomassBurnDuration();
                 baseDuration = 100;
             }
             case COMPACTED_BIOMASS -> {
-                baseRF = Config.getBurnerCompactedBiomassRfValue();
+                baseFE = Config.getBurnerCompactedBiomassFeValue();
                 burnDuration = Config.getBurnerCompactedBiomassBurnDuration();
                 baseDuration = 180;
             }
             case COMPACTED_BIOMASS_BLOCK -> {
-                baseRF = Config.getBurnerCompactedBiomassBlockRfValue();
+                baseFE = Config.getBurnerCompactedBiomassBlockFeValue();
                 burnDuration = Config.getBurnerCompactedBiomassBlockBurnDuration();
                 baseDuration = 180;
             }
             case CRUDE_BIOMASS -> {
-                baseRF = Config.getBurnerCrudeBiomassRfValue();
+                baseFE = Config.getBurnerCrudeBiomassFeValue();
                 burnDuration = Config.getBurnerCrudeBiomassBurnDuration();
                 baseDuration = 50;
             }
@@ -152,11 +152,11 @@ public class BiomassBurnerBlockEntity extends BlockEntity implements MenuProvide
             }
         }
 
-        int totalRF = (int) ((float) baseRF * ((float) burnDuration / baseDuration));
-        if (totalRF <= 0 || burnDuration <= 0) return;
+        int totalFE = (int) ((float) baseFE * ((float) burnDuration / baseDuration));
+        if (totalFE <= 0 || burnDuration <= 0) return;
 
         maxProgress = burnDuration;
-        currentBurnValue = totalRF / maxProgress;
+        currentBurnValue = totalFE / maxProgress;
         progress = 0;
         isBurning = true;
 

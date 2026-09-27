@@ -216,14 +216,14 @@ public class ATEBlocks {
                     @Override
                     public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
                         NumberFormat fmt = NumberFormat.getNumberInstance(Locale.US);
-                        int totalRF = Config.getBurnerCompactedBiomassBlockRfValue();
+                        int totalFE = Config.getBurnerCompactedBiomassBlockFeValue();
                         int burnDuration = Config.getBurnerCompactedBiomassBlockBurnDuration();
                         if (Screen.hasShiftDown()) {
-                            tooltip.add(Component.translatable("tooltip.community_agritechevolved.compacted_biomass.rf_generation", fmt.format(totalRF)).withStyle(ChatFormatting.GREEN));
+                            tooltip.add(Component.translatable("tooltip.community_agritechevolved.compacted_biomass.fe_generation", fmt.format(totalFE)).withStyle(ChatFormatting.GREEN));
                             if (burnDuration > 0) {
                                 double burnSeconds = burnDuration / 20.0D;
                                 tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.burn_duration", String.format("%.1f", burnSeconds)).withStyle(ChatFormatting.AQUA));
-                                tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.rf_per_second", fmt.format(Math.round(totalRF / burnSeconds))).withStyle(ChatFormatting.YELLOW));
+                                tooltip.add(Component.translatable("tooltip.community_agritechevolved.fuel.fe_per_second", fmt.format(Math.round(totalFE / burnSeconds))).withStyle(ChatFormatting.YELLOW));
                             }
                         } else {
                             tooltip.add(Component.translatable("tooltip.community_agritechevolved.crude_fuel.shift_info"));

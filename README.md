@@ -17,7 +17,7 @@ This is not an official release of Agritech: Evolved. See `CREDITS.txt` for the 
 
 **Basic Planter** — plant a seed or sapling, it grows by itself, drops go into whatever's underneath it. All 11 vanilla wood types.
 
-**Advanced Planter** — Planter that runs on RF, and has speed and yield upgrade slots.
+**Advanced Planter** — Planter that runs on FE, and has speed and yield upgrade slots.
 
 ## Cloche
 
@@ -26,8 +26,8 @@ Glass dome that attaches to a planter. Boosts growth speed and yield, stacks wit
 ## Machines
 
 - **Composter** — turns organic items into biomass fuel and fertilizer. Anything that works in a vanilla composter works in this one too
-- **Biomass Burner** — burns crude/regular/compacted biomass for RF
-- **Energy Capacitors** — three tiers, 500k / 1M / 4M RF
+- **Biomass Burner** — burns crude/regular/compacted biomass for FE
+- **Energy Capacitors** — three tiers, 500k / 1M / 4M FE
 
 ## Modules
 
@@ -72,10 +72,10 @@ Module strength, power draw, and processing times are all tunable.
 
 ## Power
 
-Runs on RF.
+Runs on FE.
 
-- Advanced Planter: 64 RF/t base
-- Composter: 64 RF/t base
+- Advanced Planter: 64 FE/t base
+- Composter: 64 FE/t base
 - Modules scale power draw with their effect
 
 ## JEI
